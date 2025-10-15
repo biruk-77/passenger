@@ -55,6 +55,7 @@ class GoogleMapsService {
   Future<PlaceAddress> getAddressFromCoordinates(
     LatLng coordinates, {
     double currentZoomLevel = 16.0, // Default zoom if not provided
+    bool useNearbySearch = false, // ✅ DISABLED by default to preserve user's exact search
   }) async {
     final cacheKey =
         '${coordinates.latitude.toStringAsFixed(6)},${coordinates.longitude.toStringAsFixed(6)}';
@@ -64,21 +65,29 @@ class GoogleMapsService {
         "🌍 [GEO-LOOKUP] Starting intelligent address search for $coordinates at zoom $currentZoomLevel",
       );
 
-      // --- STAGE 1: Zoom-Aware Nearby Place Search ---
-      final nearbyPlace = await _getNearbyPlace(
-        coordinates,
-        currentZoomLevel: currentZoomLevel,
-      );
-      if (nearbyPlace != null) {
-        debugPrint(
-          "✅ [Stage 1] SUCCESS: Found nearby place: ${nearbyPlace.name}",
+      // --- STAGE 1: Zoom-Aware Nearby Place Search (OPTIONAL) ---
+      // ✅ This is now DISABLED by default to prevent replacing user's exact search
+      // Only use it when explicitly requested (e.g., map taps, not search results)
+      if (useNearbySearch) {
+        final nearbyPlace = await _getNearbyPlace(
+          coordinates,
+          currentZoomLevel: currentZoomLevel,
         );
-        await _saveToCache(cacheKey, nearbyPlace);
-        return nearbyPlace;
+        if (nearbyPlace != null) {
+          debugPrint(
+            "✅ [Stage 1] SUCCESS: Found nearby place: ${nearbyPlace.name}",
+          );
+          await _saveToCache(cacheKey, nearbyPlace);
+          return nearbyPlace;
+        }
+        debugPrint(
+          "⚠️ [Stage 1] No high-quality nearby places found. Proceeding to Stage 2.",
+        );
+      } else {
+        debugPrint(
+          "ℹ️ [Stage 1] SKIPPED: Using direct geocoding to preserve accuracy.",
+        );
       }
-      debugPrint(
-        "⚠️ [Stage 1] No high-quality nearby places found. Proceeding to Stage 2.",
-      );
 
       // --- STAGE 2: Precise Reverse Geocoding for Street Address ---
       final geocodeResponse = await _dio.get(
@@ -203,6 +212,8 @@ class GoogleMapsService {
           'input': input,
           'sessiontoken': _sessionToken,
           'components': 'country:ET',
+          // ✅ NO location/radius = pure text search, not "nearby" bias
+          // This ensures we get exactly what the user searches for
         },
       );
       if (_isResponseValid(response, 'predictions')) {
