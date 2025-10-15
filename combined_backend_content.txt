@@ -1,0 +1,1907 @@
+﻿// lib/models/active_booking_state.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'map_state.dart'; // <-- FIX: ADD THIS IMPORT LINE
+import 'booking.dart';
+import 'booking_progress.dart';
+
+class ActiveBookingState {
+  final Booking booking;
+  final BookingProgress progress;
+  final MapState mapState; // <-- This will now work correctly
+  final List<LatLng> polylinePoints;
+
+  ActiveBookingState({
+    required this.booking,
+    required this.progress,
+    required this.mapState,
+    required this.polylinePoints,
+  });
+}
+// lib/models/booking.dart
+import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'location.dart';
+
+import 'dart:convert';
+
+class Booking {
+  final String id;
+  final String passengerId;
+  final String? driverId;
+  final LocationPoint pickup;
+  final LocationPoint dropoff;
+  final String vehicleType;
+  final String status;
+  final double? estimatedFare;
+  final double? finalFare;
+  final String paymentMethod;
+
+  // Driver & Vehicle Info (populated after a match)
+  final String? assignedDriverName;
+  final Map<String, dynamic>? assignedVehicleDetails;
+  final String? driverPhotoUrl;
+  final double? driverRating;
+  final String? driverPhone;
+
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  // --- CONSTRUCTOR ---
+  Booking({
+    required this.id,
+    required this.passengerId,
+    this.driverId,
+    required this.pickup,
+    required this.dropoff,
+    required this.vehicleType,
+    required this.status,
+    this.estimatedFare,
+    this.finalFare,
+    required this.paymentMethod,
+    this.assignedDriverName,
+    this.assignedVehicleDetails,
+    this.driverPhotoUrl,
+    this.driverRating,
+    this.driverPhone,
+    required this.createdAt,
+    this.updatedAt,
+  });
+
+  // --- FACTORY CONSTRUCTOR (JSON PARSING) ---
+  // This factory is the core of the model's resilience.
+  factory Booking.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse a double from various numeric types
+    double? _parseDouble(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
+    // Determine the source of the main data ('patch' object or top level)
+    final data =
+        json.containsKey('patch') && json['patch'] is Map<String, dynamic>
+        ? json['patch'] as Map<String, dynamic>
+        : json;
+
+    // The booking ID is consistently at the top level
+    final bookingId =
+        json['bookingId']?.toString() ??
+        (data['id'] ?? data['_id'])?.toString() ??
+        '';
+
+    // Safely extract the nested driver object
+    final driverJson = data['driver'] is Map<String, dynamic>
+        ? data['driver'] as Map<String, dynamic>
+        : null;
+
+    // --- â­ NEW & IMPROVED VEHICLE PARSING ---
+    // The vehicle data can be in multiple places. This logic checks all of them.
+    final vehicleJson = data['vehicle'] is Map<String, dynamic>
+        ? data['vehicle'] as Map<String, dynamic>
+        : driverJson?['vehicle'] is Map<String, dynamic>
+        ? driverJson!['vehicle'] as Map<String, dynamic>
+        : null;
+
+    return Booking(
+      id: bookingId,
+      passengerId:
+          (data['passengerId'] ?? data['passenger']?['id'])?.toString() ?? '',
+
+      // Get driverId from multiple possible keys
+      driverId: data['driverId']?.toString() ?? driverJson?['id']?.toString(),
+
+      pickup: data['pickup'] is Map<String, dynamic>
+          ? LocationPoint.fromJson(data['pickup'])
+          : LocationPoint.empty(),
+      dropoff: data['dropoff'] is Map<String, dynamic>
+          ? LocationPoint.fromJson(data['dropoff'])
+          : LocationPoint.empty(),
+
+      // --- â­ NEW & IMPROVED DETAIL PARSING ---
+      // Get vehicleType from the vehicle object first, then fall back to the top level.
+      vehicleType:
+          vehicleJson?['type']?.toString() ??
+          data['vehicleType']?.toString() ??
+          'unknown',
+      status: data['status']?.toString() ?? 'unknown',
+      paymentMethod: data['paymentMethod']?.toString() ?? 'cash',
+      estimatedFare: _parseDouble(
+        data['fareEstimated'] ?? data['estimatedFare'],
+      ),
+      finalFare: _parseDouble(data['fareFinal'] ?? data['finalFare']),
+
+      // Extract all the rich details from the nested driverJson and vehicleJson
+      assignedDriverName: driverJson?['name']?.toString(),
+      assignedVehicleDetails:
+          vehicleJson, // Now contains make, model, plate, etc.
+      driverPhotoUrl: driverJson?['photoUrl']?.toString(),
+      driverRating: _parseDouble(driverJson?['rating']),
+      driverPhone: driverJson?['phone']?.toString(),
+
+      createdAt: data['createdAt'] != null
+          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] != null
+          ? DateTime.tryParse(data['updatedAt'].toString())
+          : null,
+    );
+  }
+  @override
+  String toString() {
+    const encoder = JsonEncoder.withIndent('  ');
+    return encoder.convert(toJson());
+  }
+  // --- UTILITY METHODS ---
+
+  /// Converts the Booking object back into a JSON map. Useful for caching or debugging.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'passengerId': passengerId,
+      'driverId': driverId,
+      'pickup': pickup.toJson(),
+      'dropoff': dropoff.toJson(),
+      'vehicleType': vehicleType,
+      'status': status,
+      'estimatedFare': estimatedFare,
+      'finalFare': finalFare,
+      'paymentMethod': paymentMethod,
+      // Nested driver/vehicle info for completeness
+      'driver': {
+        'name': assignedDriverName,
+        'photoUrl': driverPhotoUrl,
+        'rating': driverRating,
+        'phone': driverPhone,
+        'vehicle': assignedVehicleDetails,
+      },
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+
+  /// Creates a new, immutable copy of the Booking with updated values.
+  /// Essential for state management (BLoC, Provider, etc.).
+  Booking copyWith({
+    String? id,
+    String? passengerId,
+    String? driverId,
+    LocationPoint? pickup,
+    LocationPoint? dropoff,
+    String? vehicleType,
+    String? status,
+    double? estimatedFare,
+    double? finalFare,
+    String? paymentMethod,
+    String? assignedDriverName,
+    Map<String, dynamic>? assignedVehicleDetails,
+    String? driverPhotoUrl,
+    double? driverRating,
+    String? driverPhone,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      passengerId: passengerId ?? this.passengerId,
+      driverId: driverId ?? this.driverId,
+      pickup: pickup ?? this.pickup,
+      dropoff: dropoff ?? this.dropoff,
+      vehicleType: vehicleType ?? this.vehicleType,
+      status: status ?? this.status,
+      estimatedFare: estimatedFare ?? this.estimatedFare,
+      finalFare: finalFare ?? this.finalFare,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      assignedDriverName: assignedDriverName ?? this.assignedDriverName,
+      assignedVehicleDetails:
+          assignedVehicleDetails ?? this.assignedVehicleDetails,
+      driverPhotoUrl: driverPhotoUrl ?? this.driverPhotoUrl,
+      driverRating: driverRating ?? this.driverRating,
+      driverPhone: driverPhone ?? this.driverPhone,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+/// Request model for creating a new booking (`POST /v1/bookings`).
+class CreateBookingRequest {
+  final String vehicleType;
+  final LatLng pickupCoordinates;
+  final LatLng dropoffCoordinates;
+  final int? durationMinutes;
+  final String? paymentMethod;
+
+  CreateBookingRequest({
+    required this.vehicleType,
+    required this.pickupCoordinates,
+    required this.dropoffCoordinates,
+    this.durationMinutes,
+    this.paymentMethod,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'vehicleType': vehicleType,
+      'pickup': {
+        'latitude': pickupCoordinates.latitude,
+        'longitude': pickupCoordinates.longitude,
+      },
+      'dropoff': {
+        'latitude': dropoffCoordinates.latitude,
+        'longitude': dropoffCoordinates.longitude,
+      },
+      if (durationMinutes != null) 'durationMinutes': durationMinutes,
+      if (paymentMethod != null) 'paymentMethod': paymentMethod,
+    };
+  }
+}
+
+// =======================================================================
+// FIX: ADD THIS CLASS BACK. It was accidentally deleted.
+// =======================================================================
+/// Request model for updating an existing booking (`PUT /v1/bookings/:bookingId`).
+class UpdateBookingRequest {
+  final LocationPoint? pickup;
+  final String? notes;
+
+  UpdateBookingRequest({this.pickup, this.notes});
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    if (pickup != null) data['pickup'] = pickup!.toJson();
+    if (notes != null) data['notes'] = notes;
+    return data;
+  }
+}
+
+class BookingNote {
+  final String bookingId;
+  final String senderId;
+  final String senderType; // "passenger" or "driver"
+  final String message;
+  final DateTime timestamp;
+
+  BookingNote({
+    required this.bookingId,
+    required this.senderId,
+    required this.senderType,
+    required this.message,
+    required this.timestamp,
+  });
+
+  factory BookingNote.fromJson(Map<String, dynamic> json) {
+    return BookingNote(
+      bookingId: json['bookingId']?.toString() ?? '',
+      senderId: json['senderId']?.toString() ?? '',
+      senderType: json['senderType']?.toString() ?? 'unknown',
+      message: json['message']?.toString() ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bookingId': bookingId,
+      'senderId': senderId,
+      'senderType': senderType,
+      'message': message,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+}
+// lib/models/booking_progress.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/// Represents the real-time progress of an active booking.
+class BookingProgress {
+  final String? bookingId;
+  final String status;
+  final LatLng? driverLocation;
+  final double? driverBearing;
+  final int? etaMinutes;
+  final String? driverId;
+  final String? driverName;
+  final Map<String, dynamic>? vehicleDetails;
+
+  BookingProgress({
+    this.bookingId,
+    required this.status,
+    this.driverLocation,
+    this.driverBearing,
+    this.etaMinutes,
+    this.driverId,
+    this.driverName,
+    this.vehicleDetails,
+  });
+
+  /// Factory constructor to create a [BookingProgress] from a JSON map.
+  factory BookingProgress.fromJson(Map<String, dynamic> json) {
+    final lastKnownData = json['lastKnown'] as Map<String, dynamic>?;
+    LatLng? dLoc;
+    double? dBearing;
+
+    if (lastKnownData != null) {
+      if (lastKnownData['latitude'] != null &&
+          lastKnownData['longitude'] != null) {
+        dLoc = LatLng(lastKnownData['latitude'], lastKnownData['longitude']);
+      }
+      dBearing = (lastKnownData['bearing'] as num?)?.toDouble();
+    }
+
+    return BookingProgress(
+      bookingId: json['bookingId']?.toString(),
+      status: json['status'] ?? 'unknown',
+      etaMinutes: (json['etaMinutes'] as num?)?.toInt(),
+      driverLocation: dLoc,
+      driverBearing: dBearing,
+      driverId:
+          json['driver']?['_id']?.toString() ?? json['driverId']?.toString(),
+      driverName: json['driver']?['name'] as String?,
+      vehicleDetails: json['vehicle'] as Map<String, dynamic>?,
+    );
+  }
+}
+// lib/models/discovery_response.dart
+
+import 'package:flutter/foundation.dart';
+import 'nearby_driver.dart'; // Assumes you have this model
+import 'pricing_rule.dart'; // Assumes your FareEstimate model is here
+
+/// A composite data model representing the response from the driver discovery
+/// and fare estimation endpoint.
+///
+/// This object encapsulates both the list of available drivers nearby and the
+/// calculated fare estimate for the proposed trip, allowing the UI to be
+/// built from a single, efficient API call.
+@immutable
+class DiscoveryResponse {
+  /// A list of drivers that are currently available within the specified radius.
+  final List<NearbyDriver> drivers;
+
+  /// The estimated fare details for the trip from pickup to dropoff.
+  final FareEstimate estimate;
+
+  const DiscoveryResponse({required this.drivers, required this.estimate});
+
+  /// Creates a [DiscoveryResponse] instance from a JSON map.
+  ///
+  /// This factory constructor includes robust parsing with type checking and
+  /// default values to prevent runtime errors from malformed API responses.
+  factory DiscoveryResponse.fromJson(Map<String, dynamic> json) {
+    try {
+      // Safely parse the 'drivers' list. If it's null or not a list, default to an empty list.
+      final driversData = json['drivers'];
+      final List<NearbyDriver> parsedDrivers = (driversData is List)
+          ? driversData
+                .map(
+                  (driverJson) =>
+                      NearbyDriver.fromJson(driverJson as Map<String, dynamic>),
+                )
+                .toList()
+          : <NearbyDriver>[];
+
+      // Safely parse the 'estimate' object.
+      // Throws an error if 'estimate' is null or not a map, as it's essential.
+      final estimateData = json['estimate'];
+      if (estimateData == null || estimateData is! Map<String, dynamic>) {
+        throw const FormatException(
+          "Missing or invalid 'estimate' data in DiscoveryResponse JSON",
+        );
+      }
+      final FareEstimate parsedEstimate = FareEstimate.fromJson(estimateData);
+
+      return DiscoveryResponse(
+        drivers: parsedDrivers,
+        estimate: parsedEstimate,
+      );
+    } catch (e) {
+      debugPrint("ðŸš¨ Error parsing DiscoveryResponse: $e");
+      // Depending on your error handling strategy, you might want to rethrow
+      // or return a default/error state object. Rethrowing is often better.
+      rethrow;
+    }
+  }
+
+  /// Creates a copy of this [DiscoveryResponse] instance with optional new values.
+  DiscoveryResponse copyWith({
+    List<NearbyDriver>? drivers,
+    FareEstimate? estimate,
+  }) {
+    return DiscoveryResponse(
+      drivers: drivers ?? this.drivers,
+      estimate: estimate ?? this.estimate,
+    );
+  }
+
+  @override
+  String toString() =>
+      'DiscoveryResponse(drivers: ${drivers.length} drivers, estimate: $estimate)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is DiscoveryResponse &&
+        listEquals(other.drivers, drivers) &&
+        other.estimate == estimate;
+  }
+
+  @override
+  int get hashCode => drivers.hashCode ^ estimate.hashCode;
+}
+// lib/models/location.dart
+import 'package:flutter/foundation.dart'; // For kDebugMode
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/// Represents a geographical point with optional address details.
+/// Used for pickup, dropoff, and general location data.
+class LocationPoint {
+  final LatLng coordinates;
+  final String? address; // e.g., "123 Main St, City"
+  final String? name; // e.g., "Home", "Office", "Starbucks"
+
+  LocationPoint({required this.coordinates, this.address, this.name});
+
+  /// Factory constructor to create a [LocationPoint] from a JSON map.
+  /// Handles various formats and malformed data with extreme resilience.
+  factory LocationPoint.fromJson(Map<String, dynamic> json) {
+    double? lat;
+    double? lon;
+
+    // Helper to safely parse a double from any numeric type
+    double? _parseDouble(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
+    // Attempt 1: Parse GeoJSON format [longitude, latitude]
+    if (json['coordinates'] is List && json['coordinates'].length == 2) {
+      final List<dynamic> coords = json['coordinates'];
+      // GeoJSON is [long, lat]
+      lon = _parseDouble(coords[0]);
+      lat = _parseDouble(coords[1]);
+    }
+    // Attempt 2: Fallback to direct latitude/longitude fields
+    else {
+      lat = _parseDouble(json['latitude']);
+      lon = _parseDouble(json['longitude']);
+    }
+
+    // Final validation: If parsing failed, default to origin and log a warning.
+    if (lat == null || lon == null) {
+      if (kDebugMode) {
+       debugPrint(
+          "âš ï¸ WARNING: Malformed or missing coordinates in LocationPoint JSON. Defaulting to (0,0). JSON: $json",
+        );
+      }
+      return LocationPoint.empty(); // Use our new safe default
+    }
+
+    return LocationPoint(
+      coordinates: LatLng(lat, lon),
+      address: json['address'] as String?,
+      name: json['name'] as String?,
+    );
+  }
+
+  // ðŸ”¥ðŸ”¥ðŸ”¥ THE FIX IS HERE ðŸ”¥ðŸ”¥ðŸ”¥
+  /// A factory for creating a safe, default "empty" LocationPoint.
+  /// This is used as a fallback when API data is missing, preventing null crashes.
+  factory LocationPoint.empty() {
+    return LocationPoint(
+      coordinates: const LatLng(0, 0),
+      address: 'Unknown Location',
+      name: 'Unknown',
+    );
+  }
+  // ðŸ”¥ðŸ”¥ðŸ”¥ END OF FIX ðŸ”¥ðŸ”¥ðŸ”¥
+
+  /// Converts this [LocationPoint] object to a JSON map suitable for API requests.
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': coordinates.latitude,
+      'longitude': coordinates.longitude,
+      if (address != null) 'address': address,
+      if (name != null) 'name': name,
+    };
+  }
+
+  /// Converts coordinates to the backend's GeoJSON format `{'coordinates': [longitude, latitude]}`.
+  Map<String, dynamic> toGeoJsonPayload() {
+    return {
+      'type': 'Point',
+      'coordinates': [coordinates.longitude, coordinates.latitude],
+    };
+  }
+}
+
+// [Addition] Request model for pushing live location updates (`POST /v1/live/push`).
+class LiveLocationPushRequest {
+  final double latitude;
+  final double longitude;
+  final String? status;
+  final String? locationType;
+  final double? accuracy;
+  final double? heading;
+  final double? speed;
+  final String? tripId;
+
+  LiveLocationPushRequest({
+    required this.latitude,
+    required this.longitude,
+    this.status,
+    this.locationType = "current", // Good default
+    this.accuracy,
+    this.heading,
+    this.speed,
+    this.tripId,
+  });
+
+  /// Converts this object to a JSON map, only including non-null fields.
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+    if (status != null) data['status'] = status;
+    if (locationType != null) data['locationType'] = locationType;
+    if (accuracy != null) data['accuracy'] = accuracy;
+    if (heading != null) data['heading'] = heading;
+    if (speed != null) data['speed'] = speed;
+    if (tripId != null) data['tripId'] = tripId;
+    return data;
+  }
+}
+// lib/models/map_state.dart
+enum MapState {
+  initial,              // App is just starting up
+  discovery,            // Default state: User can see nearby drivers and search
+  planning,             // User has selected a destination, viewing routes/prices
+  searchingForDriver,   // "Request Ride" pressed, waiting for a match
+  driverOnTheWay,       // A driver has accepted the ride
+  ongoingTrip,          // Passenger is in the car, heading to the destination
+  postTripRating,       // The trip is finished, awaiting a rating
+}
+// lib/models/nearby_driver.dart
+import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/// Represents a driver that is nearby to the passenger or assigned to a trip.
+/// This model is designed to be flexible, handling data from different API endpoints.
+class NearbyDriver {
+  final String id;
+  final String name;
+  final LatLng position;
+  final double? bearing; // Direction in degrees (0-360)
+  final String? vehicleType; // e.g., 'mini', 'sedan', 'van'
+  final bool available;
+  final String? photoUrl;
+  final double? rating;
+  final String? phone;
+  final Map<String, dynamic>? vehicle;
+
+  NearbyDriver({
+    required this.id,
+    required this.name,
+    required this.position,
+    this.bearing,
+    this.vehicleType,
+    this.available = true,
+    this.photoUrl,
+    this.rating,
+    this.phone,
+    this.vehicle,
+  });
+
+  /// Factory constructor to create a [NearbyDriver] from a JSON map.
+  ///
+  /// This factory is robust and can parse driver data from multiple potential formats:
+  /// 1. From the `/drivers/available` endpoint where location is in a nested object.
+  /// 2. From a more detailed booking object where driver details might be at the top level.
+  factory NearbyDriver.fromJson(Map<String, dynamic> json) {
+    // --- 1. ID Parsing ---
+    // Safely parse the ID, preferring 'driverId' but falling back to '_id'.
+    final String driverId = (json['driverId'] ?? json['_id'])?.toString() ?? '';
+
+    // --- 2. Location and Bearing Parsing ---
+    LatLng parsedPosition = const LatLng(0, 0);
+    double? parsedBearing;
+
+    // The `/drivers/available` endpoint nests location data.
+    if (json.containsKey('lastKnownLocation') &&
+        json['lastKnownLocation'] is Map) {
+      final locationData = json['lastKnownLocation'] as Map<String, dynamic>;
+      final lat = locationData['latitude'] as num?;
+      final lon = locationData['longitude'] as num?;
+      if (lat != null && lon != null) {
+        parsedPosition = LatLng(lat.toDouble(), lon.toDouble());
+      }
+      // Bearing is also inside this nested object.
+      parsedBearing = (locationData['bearing'] as num?)?.toDouble();
+    }
+    // Handle cases where lat/lon might be at the top level.
+    else if (json.containsKey('latitude') && json.containsKey('longitude')) {
+      final lat = json['latitude'] as num?;
+      final lon = json['longitude'] as num?;
+      if (lat != null && lon != null) {
+        parsedPosition = LatLng(lat.toDouble(), lon.toDouble());
+      }
+    }
+
+    // Bearing can also be at the top level.
+    if (parsedBearing == null && json.containsKey('bearing')) {
+      parsedBearing = (json['bearing'] as num?)?.toDouble();
+    }
+
+    if (parsedPosition.latitude == 0.0 && parsedPosition.longitude == 0.0) {
+      if (kDebugMode) {
+       debugPrint(
+          "Warning: Could not parse location for driver ID $driverId. Defaulting to (0,0).",
+        );
+      }
+    }
+
+    // --- 3. Other Details Parsing ---
+    return NearbyDriver(
+      id: driverId,
+      // Provide a sensible default name if none is present.
+      name: json['name']?.toString() ?? 'Driver #$driverId',
+      position: parsedPosition,
+      bearing: parsedBearing,
+      vehicleType: json['vehicleType']?.toString(),
+      // 'available' might not be present in all contexts, default to true for discovery.
+      available: json['available'] as bool? ?? true,
+      photoUrl: json['photoUrl']?.toString(),
+      rating: (json['rating'] as num?)?.toDouble(),
+      phone: json['phone']?.toString(),
+      vehicle: json['vehicle'] as Map<String, dynamic>?,
+    );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      // The backend expects a nested location object
+      'lastKnownLocation': {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'bearing': bearing,
+      },
+      'vehicleType': vehicleType,
+      'available': available,
+      'photoUrl': photoUrl,
+      'rating': rating,
+      'phone': phone,
+      // Include a placeholder for vehicle, assuming the API might send it
+      // This is what your SocketService is looking for.
+      'vehicle': vehicle,
+    };
+  }
+}
+// lib/models/passenger.dart
+import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // Only if LatLng is directly used
+
+/// Represents a passenger's profile information.
+class Passenger {
+  final String id;
+  final String name;
+  final String phone;
+  final String email;
+  final List<EmergencyContact>? emergencyContacts;
+  final String? photoUrl;
+  final double? rating;
+  final int? ratingCount;
+  final double? walletBalance;
+  final String? status;
+  // FIX: Make date fields nullable because they are often missing from the API response.
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  Passenger({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.email,
+    this.emergencyContacts,
+    this.photoUrl,
+    this.rating,
+    this.ratingCount,
+    this.walletBalance,
+    this.status,
+    this.createdAt, // Now optional
+    this.updatedAt, // Now optional
+  });
+
+  /// Factory constructor to create a [Passenger] from a JSON map.
+  /// It handles parsing nested lists like `emergencyContacts` and other fields.
+  factory Passenger.fromJson(Map<String, dynamic> json) {
+    // FIX: Robustly parse emergencyContacts which can be a JSON string, a list, or null.
+    List<EmergencyContact>? parsedEmergencyContacts;
+    if (json['emergencyContacts'] is String) {
+      try {
+        final List<dynamic> decodedList = jsonDecode(json['emergencyContacts']);
+        parsedEmergencyContacts = decodedList
+            .map((e) => EmergencyContact.fromJson(e))
+            .toList();
+      } catch (e) {
+        parsedEmergencyContacts = null;
+      }
+    } else if (json['emergencyContacts'] is List) {
+      parsedEmergencyContacts = (json['emergencyContacts'] as List)
+          .map((e) => EmergencyContact.fromJson(e))
+          .toList();
+    }
+
+    // FIX: Robustly parse wallet balance which can be a string, a number, or a nested object.
+    double? parsedWalletBalance;
+    if (json['wallet'] is String) {
+      parsedWalletBalance = double.tryParse(json['wallet']);
+    } else if (json['wallet'] is num) {
+      parsedWalletBalance = (json['wallet'] as num).toDouble();
+    } else if (json['wallet'] is Map && json['wallet']['balance'] != null) {
+      parsedWalletBalance = (json['wallet']['balance'] as num?)?.toDouble();
+    }
+
+    return Passenger(
+      // FIX: Handle both `id` (number) and `_id` (string) keys from API and provide a default.
+      id: (json['_id'] ?? json['id'])?.toString() ?? '',
+      // FIX: Provide default values for required strings to prevent crashes on null.
+      name: json['name']?.toString() ?? 'Unnamed User',
+      phone: json['phone']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      emergencyContacts: parsedEmergencyContacts,
+      photoUrl: json['photoUrl'],
+      rating: (json['rating'] as num?)?.toDouble(),
+      // FIX: Use 'rewardPoints' from API and map it to ratingCount.
+      ratingCount:
+          (json['rewardPoints'] as num?)?.toInt() ??
+          (json['ratingCount'] as num?)?.toInt(),
+      walletBalance: parsedWalletBalance,
+      status: json['status'],
+      // FIX: Safely parse DateTime fields only if they exist in the JSON.
+      createdAt: json.containsKey('createdAt') && json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'])
+          : null,
+      updatedAt: json.containsKey('updatedAt') && json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'])
+          : null,
+    );
+  }
+
+  /// Converts this [Passenger] object to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id, // Using 'id' for consistency when caching/sending data
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'emergencyContacts': emergencyContacts?.map((e) => e.toJson()).toList(),
+      'photoUrl': photoUrl,
+      'rating': rating,
+      'ratingCount': ratingCount,
+      'wallet': {'balance': walletBalance},
+      'status': status,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+
+  /// Creates a copy of this Passenger object with updated fields.
+  Passenger copyWith({
+    String? id,
+    String? name,
+    String? phone,
+    String? email,
+    List<EmergencyContact>? emergencyContacts,
+    String? photoUrl,
+    double? rating,
+    int? ratingCount,
+    double? walletBalance,
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Passenger(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      emergencyContacts: emergencyContacts ?? this.emergencyContacts,
+      photoUrl: photoUrl ?? this.photoUrl,
+      rating: rating ?? this.rating,
+      ratingCount: ratingCount ?? this.ratingCount,
+      walletBalance: walletBalance ?? this.walletBalance,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+/// Represents an emergency contact for a passenger.
+class EmergencyContact {
+  final String name;
+  final String phone;
+
+  EmergencyContact({required this.name, required this.phone});
+
+  /// Factory constructor to create an [EmergencyContact] from a JSON map.
+  factory EmergencyContact.fromJson(Map<String, dynamic> json) {
+    return EmergencyContact(
+      name: json['name'] ?? 'Unknown',
+      phone: json['phone'] ?? '',
+    );
+  }
+
+  /// Converts this [EmergencyContact] object to a JSON map.
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'phone': phone};
+  }
+}
+
+/// Request model for passenger registration (`POST /v1/auth/passenger/register`).
+class RegisterPassengerRequest {
+  final String name;
+  final String phone;
+  final String email;
+  final String password;
+  final List<EmergencyContact>? emergencyContacts;
+
+  RegisterPassengerRequest({
+    required this.name,
+    required this.phone,
+    required this.email,
+    required this.password,
+    this.emergencyContacts,
+  });
+
+  /// Converts this [RegisterPassengerRequest] object to a JSON map for the API body.
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'password': password,
+      if (emergencyContacts != null && emergencyContacts!.isNotEmpty)
+        'emergencyContacts': emergencyContacts!.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+/// Request model for passenger login (`POST /v1/auth/passenger/login`).
+class LoginRequest {
+  final String email;
+  final String password;
+
+  LoginRequest({required this.email, required this.password});
+
+  /// Converts this [LoginRequest] object to a JSON map for the API body.
+  Map<String, dynamic> toJson() {
+    return {'email': email, 'password': password};
+  }
+}
+
+/// Request model for updating passenger profile (`PUT /v1/passengers/profile/me`).
+/// Fields are optional to allow partial updates.
+class UpdatePassengerProfileRequest {
+  final String? name;
+  final String? phone;
+  final String? email;
+  final String? password; // Only if changing password
+  final List<EmergencyContact>? emergencyContacts;
+  final String? photoUrl;
+
+  UpdatePassengerProfileRequest({
+    this.name,
+    this.phone,
+    this.email,
+    this.password,
+    this.emergencyContacts,
+    this.photoUrl,
+  });
+
+  /// Converts this [UpdatePassengerProfileRequest] object to a JSON map.
+  /// Only non-null fields are included.
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    if (name != null) data['name'] = name;
+    if (phone != null) data['phone'] = phone;
+    if (email != null) data['email'] = email;
+    if (password != null) data['password'] = password;
+    if (emergencyContacts != null) {
+      data['emergencyContacts'] = emergencyContacts!
+          .map((e) => e.toJson())
+          .toList();
+    }
+    if (photoUrl != null) data['photoUrl'] = photoUrl;
+    return data;
+  }
+}
+
+/// Response model for authentication endpoints (login/register).
+/// Contains the JWT token and the [Passenger] object.
+class AuthResponse {
+  final String token;
+  final Passenger passenger;
+
+  AuthResponse({required this.token, required this.passenger});
+
+  /// Factory constructor to create an [AuthResponse] from a JSON map.
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    return AuthResponse(
+      token: json['token'],
+      passenger: Passenger.fromJson(json['passenger']),
+    );
+  }
+}
+// lib/models/planning_cache.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pasenger/models/pricing_rule.dart';
+
+class PlanningCacheItem {
+  final List<LatLng> polylinePoints;
+  // --- CHANGE THESE ---
+  final double distanceInKm;
+  final int durationInMinutes;
+  // ------------------
+  final Map<String, FareEstimate> fareEstimates;
+
+  PlanningCacheItem({
+    required this.polylinePoints,
+    required this.distanceInKm, // Updated
+    required this.durationInMinutes, // Updated
+    required this.fareEstimates,
+  });
+}
+// lib/models/pricing_rule.dart
+import 'package:flutter/foundation.dart';
+
+// --- This is the wrapper for the API response ---
+class FareEstimateResponse {
+  final FareEstimate estimate;
+
+  FareEstimateResponse({required this.estimate});
+
+  factory FareEstimateResponse.fromJson(Map<String, dynamic> json) {
+    return FareEstimateResponse(
+      estimate: FareEstimate.fromJson(json['estimate'] as Map<String, dynamic>),
+    );
+  }
+}
+
+// --- This is the actual data model your UI will use ---
+@immutable
+class FareEstimate {
+  // All the properties your UI needs are here:
+  final double fare;
+  final String distanceText;
+  final String durationText;
+  final String currency;
+  final double distanceKm;
+  final int durationMinutes;
+
+  const FareEstimate({
+    required this.fare,
+    required this.distanceText,
+    required this.durationText,
+    required this.currency,
+    required this.distanceKm,
+    required this.durationMinutes,
+  });
+
+  // This factory correctly parses the nested JSON object from the API
+  factory FareEstimate.fromJson(Map<String, dynamic> json) {
+    return FareEstimate(
+      // The API uses 'estimatedFare' for the price
+      fare: (json['estimatedFare'] as num?)?.toDouble() ?? 0.0,
+
+      // These were the missing pieces
+      distanceText: json['distanceText'] as String? ?? '...',
+      durationText: json['durationText'] as String? ?? '...',
+
+      // Other useful data
+      currency: json['currency'] as String? ?? 'USD',
+      distanceKm: (json['distanceKm'] as num?)?.toDouble() ?? 0.0,
+      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+// lib/models/rewards.dart
+// This file defines models for rewards and fare estimations.
+
+/// Represents a passenger's earned reward.
+class PassengerReward {
+  final String id;
+  final String description;
+  final double value; // The monetary value of the reward
+  final DateTime expiryDate;
+
+  PassengerReward({
+    required this.id,
+    required this.description,
+    required this.value,
+    required this.expiryDate,
+  });
+
+  /// Factory constructor to create a [PassengerReward] from a JSON map.
+  factory PassengerReward.fromJson(Map<String, dynamic> json) {
+    return PassengerReward(
+      id: json['id'] ?? json['_id'], // Backend might use 'id' or '_id'
+      description: json['description'] ?? 'No description',
+      value: (json['value'] as num?)?.toDouble() ?? 0.0,
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.parse(json['expiryDate'])
+          : DateTime.now().add(
+              const Duration(days: 30),
+            ), // Default expiry if none
+    );
+  }
+
+  // Optional: Convert to JSON if needed for sending reward data back
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'description': description,
+      'value': value,
+      'expiryDate': expiryDate.toIso8601String(),
+    };
+  }
+}
+
+/// Represents a fare estimate response from the API.
+class FareEstimateResponse {
+  final double estimatedFare;
+  final String currency;
+  final String? fareBreakdown; // Optional detailed breakdown string
+
+  FareEstimateResponse({
+    required this.estimatedFare,
+    this.currency = 'USD', // Default currency
+    this.fareBreakdown,
+  });
+
+  /// Factory constructor to create a [FareEstimateResponse] from a JSON map.
+  factory FareEstimateResponse.fromJson(Map<String, dynamic> json) {
+    return FareEstimateResponse(
+      estimatedFare: (json['estimatedFare'] as num).toDouble(),
+      currency: json['currency'] ?? 'USD',
+      fareBreakdown: json['fareBreakdown'],
+    );
+  }
+
+  // Optional: Convert to JSON if needed
+  Map<String, dynamic> toJson() {
+    return {
+      'estimatedFare': estimatedFare,
+      'currency': currency,
+      'fareBreakdown': fareBreakdown,
+    };
+  }
+}
+
+class FareEstimate {
+  final double estimatedFare;
+  final String currency;
+  final String? fareBreakdown;
+
+  FareEstimate({
+    required this.estimatedFare,
+    this.currency = 'USD',
+    this.fareBreakdown,
+  });
+
+  factory FareEstimate.fromJson(Map<String, dynamic> json) {
+    return FareEstimate(
+      estimatedFare: (json['estimatedFare'] as num).toDouble(),
+      currency: json['currency'] ?? 'Birr',
+      fareBreakdown: json['fareBreakdown'],
+    );
+  }
+}
+// lib/models/ride_history.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+class LocationPoint {
+  final LatLng coordinates;
+  String? address; // <-- REMOVE 'final' KEYWORD HERE
+
+  LocationPoint({required this.coordinates, this.address});
+
+  // ... fromJson and toJson methods remain the same ...
+  factory LocationPoint.fromJson(Map<String, dynamic> json) {
+    return LocationPoint(
+      coordinates: LatLng(
+        (json['latitude'] as num?)?.toDouble() ?? 0.0,
+        (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      ),
+      address: json['address'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'latitude': coordinates.latitude,
+    'longitude': coordinates.longitude,
+    'address': address,
+  };
+}
+
+class RideHistoryItem {
+  final String id;
+  final String status;
+  final DateTime createdAt;
+  final LocationPoint? pickup;
+  final LocationPoint? dropoff;
+  final double? fare;
+  final String vehicleType;
+  final String? driverId;
+  final String? driverName;
+
+  RideHistoryItem({
+    required this.id,
+    required this.status,
+    required this.createdAt,
+    this.pickup,
+    this.dropoff,
+    this.fare,
+    required this.vehicleType,
+    this.driverId,
+    this.driverName,
+  });
+
+  factory RideHistoryItem.fromJson(Map<String, dynamic> json) {
+    // ... your existing fromJson logic is fine ...
+    double? finalFare = (json['fareFinal'] as num?)?.toDouble();
+    if (finalFare == null || finalFare == 0) {
+      finalFare = (json['fareEstimated'] as num?)?.toDouble();
+    }
+    String? driverId, driverName;
+    if (json['driver'] != null && json['driver'] is Map<String, dynamic>) {
+      driverId = json['driver']['_id'] as String?;
+      driverName = json['driver']['name'] as String?;
+    } else {
+      driverId = json['driverId'] as String?;
+    }
+    return RideHistoryItem(
+      id: json['_id'] as String? ?? json['id'] as String,
+      status: json['status'] as String? ?? 'unknown',
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      pickup: json['pickup'] != null
+          ? LocationPoint.fromJson(json['pickup'])
+          : null,
+      dropoff: json['dropoff'] != null
+          ? LocationPoint.fromJson(json['dropoff'])
+          : null,
+      fare: finalFare,
+      vehicleType: json['vehicleType'] as String? ?? 'standard',
+      driverId: driverId,
+      driverName: driverName ?? json['driverName'] as String?,
+    );
+  }
+
+  // ADD THIS METHOD FOR CACHING
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'status': status,
+    'createdAt': createdAt.toIso8601String(),
+    'pickup': pickup?.toJson(),
+    'dropoff': dropoff?.toJson(),
+    'fareFinal': fare,
+    'vehicleType': vehicleType,
+    'driverId': driverId,
+    'driverName': driverName,
+  };
+}
+import 'package:flutter/material.dart';
+
+class RideOption {
+  final String name;
+  final IconData icon;
+  final double priceMultiplier;
+
+  RideOption({
+    required this.name,
+    required this.icon,
+    required this.priceMultiplier,
+  });
+}
+
+// Dummy data for the ride options
+final List<RideOption> rideOptions = [
+  RideOption(
+    name: 'Standard',
+    icon: Icons.directions_car,
+    priceMultiplier: 1.0,
+  ),
+  RideOption(name: 'Comfort', icon: Icons.local_taxi, priceMultiplier: 1.2),
+  RideOption(name: 'XL', icon: Icons.airport_shuttle, priceMultiplier: 1.5),
+  RideOption(name: 'Luxury', icon: Icons.star, priceMultiplier: 2.0),
+];
+// lib/models/route.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+/// Model for the custom response from the `/v1/mapping/route` endpoint.
+class BackendRouteResponse {
+  final double distanceKm;
+  final int durationMinutes;
+  final List<LatLng> decodedPolylinePoints;
+  // Let's add a "status" for consistency, even if API doesn't send it, to avoid breaking the UI check
+  final String status;
+
+  // Added getters to mimic the old structure for minimal UI changes
+  List<RoutePath> get routes => [
+    RoutePath(
+      overviewPolyline: '', // Not provided by new API
+      firstLeg: RouteLeg(
+        distanceText: '${distanceKm.toStringAsFixed(1)} km',
+        durationText: '$durationMinutes min',
+        distanceValue: (distanceKm * 1000).toInt(),
+        durationValue: durationMinutes * 60,
+      ),
+      // Pass the decoded points directly
+      decodedPolylinePoints: decodedPolylinePoints,
+    ),
+  ];
+
+  BackendRouteResponse({
+    required this.distanceKm,
+    required this.durationMinutes,
+    required this.decodedPolylinePoints,
+    this.status = "OK", // Default to "OK" if parsing is successful
+  });
+
+  /// Factory constructor to create a [BackendRouteResponse] from the custom JSON map.
+  factory BackendRouteResponse.fromJson(Map<String, dynamic> json) {
+    // Safely parse the coordinates list
+    final List<dynamic> coordinates = json['geometry']?['coordinates'] ?? [];
+    final List<LatLng> points = coordinates.map((coord) {
+      // The format is [longitude, latitude]
+      if (coord is List && coord.length == 2) {
+        return LatLng(coord[1] as double, coord[0] as double);
+      }
+      return const LatLng(0, 0); // Fallback for bad data
+    }).toList();
+
+    return BackendRouteResponse(
+      distanceKm: (json['distanceKm'] as num?)?.toDouble() ?? 0.0,
+      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
+      decodedPolylinePoints: points,
+    );
+  }
+}
+
+/// Represents a single route path. This is now simplified to work with the custom API.
+class RoutePath {
+  final String overviewPolyline;
+  final RouteLeg? firstLeg;
+  final List<LatLng> decodedPolylinePoints; // Store points directly
+
+  RoutePath({
+    required this.overviewPolyline,
+    this.firstLeg,
+    this.decodedPolylinePoints = const [],
+  });
+}
+
+/// Represents a single leg of a route (e.g., from origin to destination).
+/// This model remains the same as it's used internally by the new `BackendRouteResponse`.
+class RouteLeg {
+  final String distanceText;
+  final int distanceValue; // in meters
+  final String durationText;
+  final int durationValue; // in seconds
+
+  RouteLeg({
+    required this.distanceText,
+    required this.distanceValue,
+    required this.durationText,
+    required this.durationValue,
+  });
+}
+
+// NOTE: You can probably remove the classes below if they are not used elsewhere.
+// I am leaving them for now to avoid breaking other parts of your app.
+
+/// Represents a geographical point used in route/ETA requests.
+class RouteRequestLocation {
+  final LatLng coordinates;
+  RouteRequestLocation({required this.coordinates});
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': coordinates.latitude,
+      'longitude': coordinates.longitude,
+    };
+  }
+}
+
+/// Model for the response from `/v1/mapping/eta` endpoint.
+class EtaResponse {
+  final int etaSeconds;
+  final String etaText;
+  EtaResponse({required this.etaSeconds, required this.etaText});
+  factory EtaResponse.fromJson(Map<String, dynamic> json) {
+    return EtaResponse(
+      etaSeconds: json['eta'] as int,
+      etaText: json['etaText'] as String,
+    );
+  }
+}
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+class RouteDetails {
+  final List<LatLng> points;
+  final String distanceText;
+  final String durationText;
+  final int distanceValue; // in meters
+  final int durationValue; // in seconds
+  final LatLngBounds bounds;
+
+  RouteDetails({
+    required this.points,
+    required this.distanceText,
+    required this.durationText,
+    required this.distanceValue,
+    required this.durationValue,
+    required this.bounds,
+  });
+}
+// lib/models/search_result.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+// Represents the details of a place selected from Google Places API or map tap
+class PlaceDetails {
+  final String primaryText;
+  final String? secondaryText;
+  final LatLng coordinates;
+  final String placeId; // Google Places ID for fetching more details if needed
+
+  PlaceDetails({
+    required this.primaryText,
+    this.secondaryText,
+    required this.coordinates,
+    required this.placeId,
+  });
+}
+
+enum SearchIntent {
+  findDestination, // This is the correct name
+  setHome,
+  setWork,
+  addFavorite,
+}
+
+enum SearchAction {
+  selectPlace, // This is the correct name
+  pickOnMap,
+  cancelled,
+}
+
+// The object returned by the SearchScreen to the HomeScreen
+class SearchResult {
+  final SearchAction action;
+  final PlaceDetails? start;
+  final PlaceDetails? end;
+  final String? fieldToPick; // This is the ONLY safe addition needed
+
+  SearchResult({
+    required this.action,
+    this.start,
+    this.end,
+    this.fieldToPick, // Make sure this optional field is here
+  });
+}
+// lib/models/simulated_driver.dart
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'nearby_driver.dart'; // We need this to convert back
+
+/// A model specifically for managing the state of a single simulated driver.
+/// It is not used for real API data, only for the demo simulation.
+class SimulatedDriver {
+  final String id;
+  final LatLng position;
+  final double bearing;
+  final String vehicleType;
+
+  SimulatedDriver({
+    required this.id,
+    required this.position,
+    required this.bearing,
+    required this.vehicleType,
+  });
+
+  /// Creates an updated copy of this driver. Essential for state management.
+  SimulatedDriver copyWith({
+    LatLng? position,
+    double? bearing,
+  }) {
+    return SimulatedDriver(
+      id: id,
+      position: position ?? this.position,
+      bearing: bearing ?? this.bearing,
+      vehicleType: vehicleType,
+    );
+  }
+
+  /// Converts this simulated driver into a `NearbyDriver` that the UI can display.
+  NearbyDriver toNearbyDriver() {
+    return NearbyDriver(
+      id: id,
+      name: 'Simulated Driver #${id.split('_').last}', // e.g., "Simulated Driver #3"
+      position: position,
+      bearing: bearing,
+      vehicleType: vehicleType,
+      available: true,
+      rating: 4.5 + (int.parse(id.split('_').last) % 5) / 10, // Random-ish rating 4.5-4.9
+    );
+  }
+}
+// lib/models/socket_models.dart
+import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+// =========================================================================
+// ðŸ”” EVENT MODEL 1: BOOKING STATUS UPDATE
+// =========================================================================
+
+class BookingStatusUpdate {
+  final String bookingId;
+  final String status;
+  final String? driverId;
+  final Map<String, dynamic>? vehicle;
+
+  // âœ… --- FIX: ADDED THESE NEW, NULLABLE FIELDS ---
+  // These will be populated with data when the trip is completed.
+  final double? fareFinal;
+  final double? distanceKm;
+
+  BookingStatusUpdate({
+    required this.bookingId,
+    required this.status,
+    this.driverId,
+    this.vehicle,
+    // âœ… Added to the constructor
+    this.fareFinal,
+    this.distanceKm,
+  });
+
+  // âœ… --- THIS FACTORY IS NOW CORRECTED TO PARSE THE NEW FIELDS ---
+  factory BookingStatusUpdate.fromJson(Map<String, dynamic> json) {
+    // This logic handles data whether it's at the top level or nested in a 'patch' object
+    final data = json.containsKey('patch')
+        ? json['patch'] as Map<String, dynamic>
+        : json;
+
+    return BookingStatusUpdate(
+      // The server sometimes sends 'id' instead of 'bookingId'
+      bookingId: (json['id'] ?? data['bookingId']) as String? ?? '',
+      status: data['status'] as String? ?? 'unknown',
+      driverId: data['driverId'] as String?,
+
+      // âœ… Safely parse the new numeric fields. They can be null.
+      fareFinal: (data['fareFinal'] as num?)?.toDouble(),
+      distanceKm: (data['distanceKm'] as num?)?.toDouble(),
+
+      // This logic for vehicle remains the same
+      vehicle: data.containsKey('vehicle') && data['vehicle'] is Map
+          ? data['vehicle'] as Map<String, dynamic>
+          : null,
+    );
+  }
+}
+
+// =========================================================================
+// ðŸš— EVENT MODEL 2: DRIVER LOCATION UPDATE
+// =========================================================================
+class DriverLocationUpdate {
+  final String driverId;
+  final String? bookingId; // âœ… FIX: Added bookingId as it's in your log data
+  final LatLng position;
+  final double bearing;
+  final DateTime timestamp;
+
+  DriverLocationUpdate({
+    required this.driverId,
+    this.bookingId,
+    required this.position,
+    required this.bearing,
+    required this.timestamp,
+  });
+
+  // âœ… --- THIS IS THE CRITICAL FIX ---
+  // This robust constructor prevents the app from crashing if any field is null.
+  factory DriverLocationUpdate.fromJson(Map<String, dynamic> json) {
+    return DriverLocationUpdate(
+      // Safely handle driverId, defaulting to an empty string if null
+      driverId: json['driverId'] as String? ?? '',
+
+      // Safely handle bookingId, which can be null
+      bookingId: json['bookingId'] as String?,
+
+      // Safely parse position, defaulting to (0,0) if lat/lng are null
+      position: LatLng(
+        (json['latitude'] as num?)?.toDouble() ?? 0.0,
+        (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      ),
+
+      // Safely parse bearing, defaulting to 0.0 if null
+      bearing: (json['bearing'] as num?)?.toDouble() ?? 0.0,
+
+      // Safely parse the timestamp, defaulting to the current time if null or invalid
+      timestamp:
+          DateTime.tryParse(json['timestamp'] as String? ?? '') ??
+          DateTime.now(),
+    );
+  }
+}
+
+class EtaUpdate {
+  final String bookingId;
+  final String driverId;
+  final int etaMinutes;
+  final String? message;
+  final DateTime timestamp;
+
+  EtaUpdate({
+    required this.bookingId,
+    required this.driverId,
+    required this.etaMinutes,
+    this.message,
+    required this.timestamp,
+  });
+
+  factory EtaUpdate.fromJson(Map<String, dynamic> json) {
+    return EtaUpdate(
+      bookingId: json['bookingId'] as String? ?? '',
+      driverId: json['driverId'] as String? ?? '',
+      etaMinutes: (json['etaMinutes'] as num?)?.toInt() ?? 0,
+      message: json['message'] as String?,
+      timestamp: DateTime.tryParse(json['timestamp'] ?? '') ?? DateTime.now(),
+    );
+  }
+}
+
+// =========================================================================
+// âœ… NEW MODEL 4: BOOKING RATING UPDATE
+// Listens for 'booking:rating' from the server
+// =========================================================================
+class BookingRatingUpdate {
+  final String bookingId;
+  final String userType; // "passenger" or "driver"
+  final int rating;
+  final String? feedback;
+
+  BookingRatingUpdate({
+    required this.bookingId,
+    required this.userType,
+    required this.rating,
+    this.feedback,
+  });
+
+  factory BookingRatingUpdate.fromJson(Map<String, dynamic> json) {
+    return BookingRatingUpdate(
+      bookingId: json['bookingId'] as String? ?? '',
+      userType: json['userType'] as String? ?? 'unknown',
+      rating: (json['rating'] as num?)?.toInt() ?? 0,
+      feedback: json['feedback'] as String?,
+    );
+  }
+}
+
+class LastKnownLocation {
+  final LatLng position;
+  final double bearing;
+
+  LastKnownLocation({required this.position, required this.bearing});
+
+  factory LastKnownLocation.fromJson(Map<String, dynamic> json) {
+    return LastKnownLocation(
+      position: LatLng(
+        (json['latitude'] as num?)?.toDouble() ?? 0.0,
+        (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      ),
+      bearing: (json['bearing'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  // âœ… FIX: ADDED THE MISSING `toJson` METHOD for the nested object.
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'bearing': bearing,
+    };
+  }
+}
+
+// =========================================================================
+// ðŸ›¡ï¸ EVENT MODEL 3: UNAUTHORIZED NEW BOOKING BROADCAST
+// =========================================================================
+class NewBookingBroadcast {
+  final String id;
+  final String vehicleType;
+  final String status;
+
+  NewBookingBroadcast({
+    required this.id,
+    required this.vehicleType,
+    required this.status,
+  });
+
+  factory NewBookingBroadcast.fromJson(Map<String, dynamic> json) {
+    return NewBookingBroadcast(
+      id: (json['id'] ?? json['_id'])?.toString() ?? 'Unknown ID',
+      vehicleType:
+          (json['vehicleTType'] ?? json['vehicleType'])?.toString() ??
+          'unknown',
+      status: json['status']?.toString() ?? 'unknown',
+    );
+  }
+}
+
+class TripStartedUpdate {
+  final String bookingId;
+  final DateTime startedAt;
+
+  TripStartedUpdate({required this.bookingId, required this.startedAt});
+
+  factory TripStartedUpdate.fromJson(Map<String, dynamic> json) {
+    return TripStartedUpdate(
+      bookingId: json['bookingId'] as String? ?? '',
+      startedAt:
+          DateTime.tryParse(json['startedAt'] as String? ?? '') ??
+          DateTime.now(),
+    );
+  }
+}
+// lib/models/vehicle_type.dart
+import 'package:flutter/material.dart';
+
+class VehicleType {
+  final String name;
+  final IconData icon;
+  final String imagePath; // for in-app UI (assets)
+  final String? description;
+
+  VehicleType({
+    required this.name,
+    required this.icon,
+    required this.imagePath,
+    this.description,
+  });
+
+  // Remote image URLs used for notifications
+  String get notificationIconUrl {
+    switch (name.toLowerCase()) {
+      case 'mini':
+        return "https://img.icons8.com/color/512/hatchback.png"; // Compact car for mini rides
+      case 'sedan':
+        return "https://img.icons8.com/color/512/sedan.png"; // Standard sedan for regular rides
+      case 'suv':
+        return "https://img.icons8.com/color/512/suv.png"; // SUV for premium or spacious rides
+      case 'van':
+        return "https://img.icons8.com/color/512/van.png"; // Van for group rides
+      case 'bajaj':
+        return "https://img.icons8.com/color/512/auto-rickshaw.png"; // Auto-rickshaw for Bajaj/tuk-tuk rides
+      case 'motorbike':
+        return "https://img.icons8.com/color/512/motorcycle.png"; // Motorbike for quick rides
+      default:
+        return "https://img.icons8.com/color/512/car.png"; // Generic car icon
+    }
+  }
+
+  static const String genericCarIconUrl =
+      "https://img.icons8.com/color/512/car.png"; // Generic car icon for fallback
+  static const String driverIconUrl =
+      "https://img.icons8.com/color/512/driver.png"; // Realistic driver icon// Realistic driver silhouette icon from Flaticon
+  factory VehicleType.fromName(String name) {
+    return VehicleType(
+      name: name,
+      icon: _getIconForVehicle(name),
+      imagePath: _getImagePathForVehicle(name),
+    );
+  }
+
+  factory VehicleType.fromJson(Map<String, dynamic> json) {
+    final name = (json['name'] ?? '').toString();
+    return VehicleType(
+      name: name,
+      description: json['description']?.toString(),
+      icon: _getIconForVehicle(name),
+      imagePath: _getImagePathForVehicle(name),
+    );
+  }
+
+  static IconData _getIconForVehicle(String? name) {
+    switch (name?.toLowerCase()) {
+      case 'mini':
+        return Icons.directions_car;
+      case 'sedan':
+        return Icons.local_taxi;
+      case 'van':
+        return Icons.airport_shuttle;
+      case 'suv':
+        return Icons.car_rental;
+      case 'motorbike':
+        return Icons.motorcycle;
+      case 'bajaj':
+        return Icons.electric_moped;
+      default:
+        return Icons.drive_eta;
+    }
+  }
+
+  static String _getImagePathForVehicle(String? name) {
+    switch (name?.toLowerCase()) {
+      case 'sedan':
+        return 'assets/images/sedan_car.png';
+      case 'mini':
+        return 'assets/images/mini_car.png';
+      case 'van':
+        return 'assets/images/van_car.png';
+      case 'suv':
+        return 'assets/images/suv_car.png';
+      case 'motorbike':
+        return 'assets/images/motorbike.png';
+      case 'bajaj':
+        return 'assets/images/bajaj.png';
+      default:
+        return 'assets/images/car_icon.png';
+    }
+  }
+
+  String get notificationIconResourceName {
+    switch (name.toLowerCase()) {
+      case 'sedan':
+        return 'sedan_car';
+      case 'mini':
+        return 'mini_car';
+      case 'van':
+        return 'van_car';
+      case 'bajaj':
+        return 'bajaj';
+      default:
+        return 'sedan_car';
+    }
+  }
+}
+// lib/models/wallet_transaction.dart
+
+import 'package:flutter/foundation.dart';
+
+/// An enum to represent the type of a wallet transaction.
+/// Using an enum provides type safety and makes the code more readable
+/// than using raw strings.
+enum TransactionType { topup, withdrawal, payment, refund, unknown }
+
+/// An enum to represent the status of a wallet transaction.
+enum TransactionStatus { pending, completed, failed, cancelled }
+
+/// A data model representing a single transaction in a user's wallet.
+///
+/// This class encapsulates all details related to a financial transaction,
+/// such as top-ups, payments for rides, or refunds.
+@immutable
+class WalletTransaction {
+  /// The unique identifier for the transaction.
+  final String id;
+
+  /// The amount of the transaction. Can be positive (top-up) or negative (payment).
+  final double amount;
+
+  /// The type of transaction (e.g., topup, payment).
+  final TransactionType type;
+
+  /// The status of the transaction (e.g., pending, completed).
+  final TransactionStatus status;
+
+  /// A human-readable description or reason for the transaction.
+  final String description;
+
+  /// The date and time when the transaction occurred.
+  final DateTime createdAt;
+
+  /// Optional reference to a booking ID if the transaction is a ride payment.
+  final String? bookingId;
+
+  /// The payment method used for the transaction (e.g., "Telebirr", "Wallet Balance").
+  final String paymentMethod;
+
+  const WalletTransaction({
+    required this.id,
+    required this.amount,
+    required this.type,
+    required this.status,
+    required this.description,
+    required this.createdAt,
+    this.bookingId,
+    required this.paymentMethod,
+  });
+
+  /// Creates a [WalletTransaction] instance from a JSON map.
+  ///
+  /// This factory includes robust parsing for enums and dates.
+  factory WalletTransaction.fromJson(Map<String, dynamic> json) {
+    return WalletTransaction(
+      id: json['id'] as String? ?? '',
+      amount: (json['amount'] as num? ?? 0.0).toDouble(),
+      description: json['description'] as String? ?? 'No description',
+      bookingId: json['bookingId'] as String?,
+      paymentMethod: json['paymentMethod'] as String? ?? 'N/A',
+
+      // Safely parse the TransactionType enum from a string.
+      type: _parseTransactionType(json['type'] as String?),
+
+      // Safely parse the TransactionStatus enum from a string.
+      status: _parseTransactionStatus(json['status'] as String?),
+
+      // Safely parse the ISO 8601 date string.
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
+
+  // --- Private Helper Methods for Enum Parsing ---
+
+  static TransactionType _parseTransactionType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'topup':
+      case 'top-up':
+        return TransactionType.topup;
+      case 'withdrawal':
+        return TransactionType.withdrawal;
+      case 'payment':
+        return TransactionType.payment;
+      case 'refund':
+        return TransactionType.refund;
+      default:
+        return TransactionType.unknown;
+    }
+  }
+
+  static TransactionStatus _parseTransactionStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return TransactionStatus.pending;
+      case 'completed':
+      case 'success':
+        return TransactionStatus.completed;
+      case 'failed':
+        return TransactionStatus.failed;
+      case 'cancelled':
+        return TransactionStatus.cancelled;
+      default:
+        return TransactionStatus.pending; // Default to pending if unknown
+    }
+  }
+
+  @override
+  String toString() {
+    return 'WalletTransaction(id: $id, amount: $amount, type: $type, status: $status, createdAt: $createdAt)';
+  }
+
+  // You can add copyWith, ==, and hashCode here if needed for state management.
+}
