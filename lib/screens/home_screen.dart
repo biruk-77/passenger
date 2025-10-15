@@ -838,6 +838,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final address = await _googleMapsService.getAddressFromCoordinates(
         position,
+        useNearbySearch: true, // ✅ Use nearby search for map taps
       );
       return PlaceDetails(
         primaryText: address.name,
@@ -1594,7 +1595,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final zoom = await controller.getZoomLevel();
 
         final PlaceAddress place = await _googleMapsService
-            .getAddressFromCoordinates(_startPoint!, currentZoomLevel: zoom);
+            .getAddressFromCoordinates(
+              _startPoint!,
+              currentZoomLevel: zoom,
+              useNearbySearch: true, // ✅ Use nearby search for current location
+            );
 
         if (mounted) {
           // Update the state with the REAL address name.
@@ -2326,6 +2331,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final address = await _googleMapsService.getAddressFromCoordinates(
         position,
+        useNearbySearch: true, // ✅ Use nearby search for map taps
       );
       if (mounted) {
         setState(() {
@@ -2422,6 +2428,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           .getAddressFromCoordinates(
             destination,
             currentZoomLevel: currentZoom,
+            useNearbySearch: true, // ✅ Use nearby search for map taps
           );
 
       // If the start point is the user's current location, fetch its name too.
@@ -2437,6 +2444,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _startPoint!,
                 currentZoomLevel:
                     currentZoom, // Use a standard zoom for current location
+                useNearbySearch: true, // ✅ Use nearby search for map taps
               );
           resolvedStartAddress = startPlace.name;
           print("resolvedStartAddress: $resolvedStartAddress");
