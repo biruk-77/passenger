@@ -55,7 +55,7 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
       Provider.of<ApiService>(context, listen: false),
       Provider.of<AuthService>(context, listen: false),
     );
-    _viewModel.fetchTransactionsAndBalance();
+    _viewModel.fetchTransactions();
   }
 
   @override
@@ -136,7 +136,7 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
                           ),
                           const SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: viewModel.fetchTransactionsAndBalance,
+                            onPressed: viewModel.fetchTransactions,
                             child: Text(l10n.retry),
                           ),
                         ],
@@ -146,7 +146,7 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
                 }
 
                 return RefreshIndicator(
-                  onRefresh: viewModel.fetchTransactionsAndBalance,
+                  onRefresh: viewModel.fetchTransactions,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -155,73 +155,91 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
                         height:
                             kToolbarHeight + MediaQuery.of(context).padding.top,
                       ),
-                      // Wallet Balance Card
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.all(16.0),
+
+                      // Transaction Header with Count
+                      Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 20.0,
+                          horizontal: 20.0,
+                          vertical: 16.0,
                         ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primaryColor,
-                              AppColors.secondaryColor,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryColor.withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.account_balance_wallet_outlined,
-                                  color: AppColors.textSubtle,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.currentWalletBalance,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
                             Text(
-                              '${viewModel.walletCurrency} ${NumberFormat('#,##0.00').format(viewModel.walletBalance)}',
-                              style: theme.textTheme.displaySmall?.copyWith(
-                                color: AppColors.textPrimary,
-                                letterSpacing: 1.2,
+                              l10n.transactionHistory,
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                '${viewModel.transactions.length} ${viewModel.transactions.length == 1 ? 'transaction' : 'transactions'}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.2),
+                      ),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0,
-                          vertical: 8.0,
-                        ),
-                        child: Text(
-                          l10n.transactionHistory,
-                          style: theme.textTheme.headlineSmall,
+                      // Filter Chips
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            _buildFilterChip(
+                              context,
+                              label: 'All',
+                              count: viewModel.allCount,
+                              isSelected: viewModel.selectedFilter == null,
+                              onTap: () => viewModel.clearFilter(),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              context,
+                              label: 'Pending',
+                              count: viewModel.pendingCount,
+                              isSelected: viewModel.selectedFilter ==
+                                  TransactionStatus.pending,
+                              onTap: () => viewModel
+                                  .setFilter(TransactionStatus.pending),
+                              color: AppColors.warning,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              context,
+                              label: 'Completed',
+                              count: viewModel.completedCount,
+                              isSelected: viewModel.selectedFilter ==
+                                  TransactionStatus.completed,
+                              onTap: () => viewModel
+                                  .setFilter(TransactionStatus.completed),
+                              color: AppColors.success,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildFilterChip(
+                              context,
+                              label: 'Failed',
+                              count: viewModel.failedCount,
+                              isSelected: viewModel.selectedFilter ==
+                                  TransactionStatus.failed,
+                              onTap: () =>
+                                  viewModel.setFilter(TransactionStatus.failed),
+                              color: AppColors.error,
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: 16),
 
                       Expanded(
                         child: viewModel.transactions.isEmpty
@@ -318,7 +336,7 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
                                             CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                            '${isCredit ? '+' : '-'} ${viewModel.walletCurrency} ${transaction.amount.toStringAsFixed(2)}',
+                                            '${isCredit ? '+' : '-'} ETB ${transaction.amount.toStringAsFixed(2)}',
                                             style: theme.textTheme.bodyLarge
                                                 ?.copyWith(
                                                   color: isCredit
@@ -385,6 +403,68 @@ class _MyTransactionsScreenState extends State<MyTransactionsScreen>
                   ),
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ HELPER WIDGET FOR FILTER CHIPS
+  Widget _buildFilterChip(
+    BuildContext context, {
+    required String label,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final theme = Theme.of(context);
+    final chipColor = color ?? AppColors.primaryColor;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? chipColor.withOpacity(0.15)
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? chipColor : theme.dividerColor,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isSelected ? chipColor : theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? chipColor
+                    : theme.colorScheme.onSurface.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                count.toString(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isSelected
+                      ? Colors.white
+                      : theme.colorScheme.onSurface.withOpacity(0.7),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
