@@ -15,24 +15,34 @@ class MyTransactionsViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // ============================ FIX STARTS HERE ===========================
-  // Change from a double to a Map to hold the full wallet data.
-  Map<String, dynamic> _walletData = {'balance': 0.0, 'currency': '...'};
-  // ============================= FIX ENDS HERE ============================
-
-  List<WalletTransaction> _transactions = [];
+  List<WalletTransaction> _allTransactions = [];
+  TransactionStatus? _selectedFilter;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  TransactionStatus? get selectedFilter => _selectedFilter;
 
-  // ============================ FIX STARTS HERE ===========================
-  // Create getters for easier UI access.
-  double get walletBalance =>
-      (_walletData['balance'] as num?)?.toDouble() ?? 0.0;
-  String get walletCurrency => _walletData['currency'] as String? ?? 'ETB';
-  // ============================= FIX ENDS HERE ============================
+  // Filter transactions based on selected status
+  List<WalletTransaction> get transactions {
+    if (_selectedFilter == null) {
+      return _allTransactions;
+    }
+    return _allTransactions
+        .where((transaction) => transaction.status == _selectedFilter)
+        .toList();
+  }
 
-  List<WalletTransaction> get transactions => _transactions;
+  // Get transaction counts for each status
+  int get allCount => _allTransactions.length;
+  int get pendingCount => _allTransactions
+      .where((t) => t.status == TransactionStatus.pending)
+      .length;
+  int get completedCount => _allTransactions
+      .where((t) => t.status == TransactionStatus.completed)
+      .length;
+  int get failedCount => _allTransactions
+      .where((t) => t.status == TransactionStatus.failed)
+      .length;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -44,25 +54,26 @@ class MyTransactionsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchTransactionsAndBalance() async {
+  // Set filter for transactions
+  void setFilter(TransactionStatus? status) {
+    _selectedFilter = status;
+    notifyListeners();
+  }
+
+  // Clear filter
+  void clearFilter() {
+    _selectedFilter = null;
+    notifyListeners();
+  }
+
+  Future<void> fetchTransactions() async {
     _setLoading(true);
     setErrorMessage(null);
     try {
-      // Use Future.wait to fetch both pieces of data concurrently for better performance.
-      final results = await Future.wait([
-        _apiService.getPassengerWalletBalance(),
-        _apiService.getWalletTransactions(),
-      ]);
-
-      // ============================ FIX STARTS HERE ===========================
-      // Assign the results to the correct variables.
-      _walletData = results[0] as Map<String, dynamic>;
-      _transactions = results[1] as List<WalletTransaction>;
-      // ============================= FIX ENDS HERE ============================
-
-      _transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _allTransactions = await _apiService.getWalletTransactions();
+      _allTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     } on ApiException catch (e) {
-      setErrorMessage("Failed to load data: ${e.message}");
+      setErrorMessage("Failed to load transactions: ${e.message}");
     } catch (e) {
       setErrorMessage("An unexpected error occurred: $e");
     } finally {
