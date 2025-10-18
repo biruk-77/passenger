@@ -25,11 +25,11 @@
 //         filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
 //         child: Container(
 //           decoration: BoxDecoration(
-//             color: Colors.grey.shade900.withOpacity(0.8),
+//             color: Colors.grey.shade900.withValues(alpha:0.8),
 //             borderRadius: const BorderRadius.vertical(
 //               top: Radius.circular(30.0),
 //             ),
-//             border: Border.all(color: Colors.white.withOpacity(0.2)),
+//             border: Border.all(color: Colors.white.withValues(alpha:0.2)),
 //           ),
 //           child: Padding(
 //             padding: panelPadding, // Use the non-const padding here
@@ -189,7 +189,7 @@
 //             decoration: BoxDecoration(
 //               color: isSelected
 //                   ? Colors.white
-//                   : Colors.grey.shade800.withOpacity(0.5),
+//                   : Colors.grey.shade800.withValues(alpha:0.5),
 //               borderRadius: BorderRadius.circular(16),
 //               border: Border.all(
 //                 color: isSelected ? Colors.amber : Colors.transparent,
@@ -353,7 +353,7 @@
 //             Container(
 //               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 //               decoration: BoxDecoration(
-//                 color: Colors.black.withOpacity(0.3),
+//                 color: Colors.black.withValues(alpha:0.3),
 //                 borderRadius: BorderRadius.circular(8),
 //               ),
 //               child: Text(

@@ -1,6 +1,5 @@
 // lib/widgets/home_screen_panels/contract_driver_on_the_way_panel.dart
 import 'dart:async';
-import 'dart:ui'; // ✅ ADDED IMPORT
 import 'package:animate_do/animate_do.dart'; // ✅ ADDED IMPORT
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -147,6 +146,7 @@ class _ContractDriverOnTheWayPanelContentState
                   ),
                   const SizedBox(height: 24),
                   _buildActionButtons(context, l10n),
+                  _buildActionButtons(context, l10n),
                 ],
               ),
             ),
@@ -161,7 +161,7 @@ class _ContractDriverOnTheWayPanelContentState
       width: 40,
       height: 5,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -458,7 +458,7 @@ class _ContractDriverOnTheWayPanelContentState
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.success.withOpacity(0.8),
+            backgroundColor: AppColors.success.withValues(alpha: 0.8),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -479,7 +479,7 @@ class _ContractDriverOnTheWayPanelContentState
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error.withOpacity(0.8),
+            backgroundColor: AppColors.error.withValues(alpha: 0.8),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -496,7 +496,7 @@ class _ContractDriverOnTheWayPanelContentState
       decoration: BoxDecoration(
         color: Colors.transparent, // Let the new background show through
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: child,
     );
@@ -582,7 +582,7 @@ class _ContractDriverOnTheWayPanelContentState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -610,7 +610,7 @@ class _ContractDriverOnTheWayPanelContentState
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -638,8 +638,8 @@ class _ContractDriverOnTheWayPanelContentState
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],

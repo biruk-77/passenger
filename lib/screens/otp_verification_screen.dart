@@ -165,9 +165,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         fontWeight: FontWeight.bold,
       ),
       decoration: BoxDecoration(
-        color: AppColors.secondaryColor.withOpacity(0.5),
+        color: AppColors.secondaryColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
     );
 
@@ -176,7 +176,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         border: Border.all(color: AppColors.goldenrod, width: 2),
         boxShadow: [
           BoxShadow(
-            color: AppColors.goldenrod.withOpacity(0.3),
+            color: AppColors.goldenrod.withValues(alpha: 0.3),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -217,7 +217,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       FadeInDown(
                         child: CircleAvatar(
                           radius: 40,
-                          backgroundColor: AppColors.goldenrod.withOpacity(0.1),
+                          backgroundColor: AppColors.goldenrod.withValues(
+                            alpha: 0.1,
+                          ),
                           child: const Icon(
                             Icons.phonelink_lock_rounded,
                             size: 40,

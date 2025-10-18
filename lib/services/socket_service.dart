@@ -1,4 +1,3 @@
-// lib/services/socket_service.dart
 import 'dart:async';
 import 'dart:convert'; // Required for jsonEncode
 import 'package:flutter/foundation.dart';
@@ -37,6 +36,7 @@ class SocketService {
   NotificationService? _notificationService;
 
   late AuthService _authService;
+  Future<bool>? _ongoingRefresh; // coordinate single-flight refresh
 
   void setAuthService(AuthService authService) {
     _authService = authService;
@@ -263,7 +263,7 @@ class SocketService {
     _socketErrorController.add("Failed to reconnect to the server.");
   }
 
-  void _handleBookingError(dynamic data) {
+  void _handleBookingError(dynamic data) async {
     const eventName = 'booking_error/auth_error';
     Logger.error(
       _source,
@@ -276,14 +276,38 @@ class SocketService {
       errorMessage = data;
     }
 
-    // --- ✅ THE FIX IS HERE ---
-    // Log the user out because their session is likely invalid.
+    // Try a token refresh before forcing logout
     Logger.warning(
       _source,
-      "   L-- Invalid session detected from server error. Triggering logout.",
+      "   L-- Attempting session refresh due to socket auth/booking error...",
     );
-    _authService.logout();
-    // --- END OF FIX ---
+    _ongoingRefresh ??= _authService.refreshToken();
+    final bool refreshed = await _ongoingRefresh!.whenComplete(() {
+      _ongoingRefresh = null;
+    });
+
+    if (refreshed) {
+      Logger.success(
+        _source,
+        "   L-- ✅ Session refresh succeeded. Reconnecting socket with new token...",
+      );
+      final newToken = await _authService.storage.getAccessToken();
+      if (newToken != null && newToken.isNotEmpty) {
+        connect(newToken);
+      } else {
+        Logger.error(
+          _source,
+          "   L-- Refresh returned without a token. Logging out.",
+        );
+        await _authService.logout(hard: true);
+      }
+    } else {
+      Logger.warning(
+        _source,
+        "   L-- ❌ Session refresh failed. Logging out to clear invalid session.",
+      );
+      await _authService.logout(hard: true);
+    }
 
     _socketErrorController.add(errorMessage);
     if (l10n != null && _notificationService != null) {
@@ -291,6 +315,7 @@ class SocketService {
         title: l10n!.notificationBookingErrorTitle,
         body:
             "Your session has expired. Please log in again.", // Provide a clear message
+        isOngoing: false,
       );
     }
   }
@@ -308,6 +333,7 @@ class SocketService {
       _notificationService!.showRideUpdateNotification(
         title: l10n!.notificationNoDriversTitle,
         body: l10n!.notificationNoDriversBody,
+        isOngoing: false,
       );
     }
   }
@@ -502,6 +528,7 @@ class SocketService {
             title: title,
             body: body,
             payload: update.bookingId,
+            isOngoing: status != 'cancelled',
           );
         }
       }
@@ -539,6 +566,7 @@ class SocketService {
           title: l10n!.notificationRideCanceledTitle,
           body: l10n!.notificationRideCanceledBody,
           payload: update.bookingId,
+          isOngoing: false,
         );
       }
     } catch (e, s) {
@@ -573,6 +601,7 @@ class SocketService {
           body: note.message,
           payload: note.bookingId,
           imageUrl: VehicleType.driverIconUrl,
+          isOngoing: false,
         );
       }
     } catch (e, s) {
@@ -729,7 +758,7 @@ class SocketService {
       _etaUpdateController.add(update);
       Logger.success(
         _source,
-        "   L-- ✅ Streamed ETA update for Booking ${update.bookingId}: ${update.etaMinutes} mins.",
+        "   L-- ✅ Streamed ETA update for Booking ${update.bookingId}:  mins.",
       );
     } catch (e, s) {
       Logger.error(_source, "[$eventName] 💥 Parsing Failed!", e, s);
@@ -757,7 +786,7 @@ class SocketService {
           'bookingId': bookingId,
           'status': 'completed',
           'fareFinal': data['amount'],
-          'distanceKm': data['distance'],
+          'distanceTraveled': data['distance'],
         }),
       );
       Logger.success(
@@ -771,6 +800,7 @@ class SocketService {
           body: l10n!.notificationTripCompletedBody,
           payload: bookingId,
           imageUrl: VehicleType.genericCarIconUrl,
+          isOngoing: false,
         );
       }
     } catch (e, s) {
@@ -827,6 +857,14 @@ class SocketService {
         'dropoff': {'latitude': dropoffCoordinates.latitude, 'longitude': dropoffCoordinates.longitude, 'address': dropoffAddress},
         if (vehicleType != null) 'vehicleType': vehicleType,
       })}",
+    );
+
+    debugPrint("🔌 [SOCKET] Sending to backend:");
+    debugPrint(
+      "🔌 [SOCKET] Pickup: $pickupAddress at ${pickupCoordinates.latitude}, ${pickupCoordinates.longitude}",
+    );
+    debugPrint(
+      "🔌 [SOCKET] Dropoff: $dropoffAddress at ${dropoffCoordinates.latitude}, ${dropoffCoordinates.longitude}",
     );
 
     final payload = {

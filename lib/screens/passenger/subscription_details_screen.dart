@@ -318,7 +318,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen>
     if (subscription.endDate == null) {
       return Text(
         l10n.notAssigned,
-        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+        style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
       );
     }
 
@@ -373,7 +373,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -401,8 +401,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -439,16 +439,20 @@ class _DetailCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(icon, color: Colors.white.withOpacity(0.8), size: 20),
+                  Icon(
+                    icon,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     title,
@@ -460,7 +464,7 @@ class _DetailCard extends StatelessWidget {
                   ),
                 ],
               ),
-              Divider(height: 24, color: Colors.white.withOpacity(0.3)),
+              Divider(height: 24, color: Colors.white.withValues(alpha: 0.3)),
               ...children,
             ],
           ),
@@ -491,7 +495,10 @@ class _DetailRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.7))),
+          Text(
+            label,
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -531,15 +538,15 @@ class _StatusBadge extends StatelessWidget {
       case 'active':
       case 'paid':
       case 'completed':
-        return AppColors.success.withOpacity(0.2);
+        return AppColors.success.withValues(alpha: 0.2);
       case 'pending':
-        return AppColors.warning.withOpacity(0.2);
+        return AppColors.warning.withValues(alpha: 0.2);
       case 'expired':
       case 'unpaid':
       case 'cancelled':
-        return AppColors.error.withOpacity(0.2);
+        return AppColors.error.withValues(alpha: 0.2);
       default:
-        return Colors.grey.withOpacity(0.2);
+        return Colors.grey.withValues(alpha: 0.2);
     }
   }
 

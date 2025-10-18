@@ -209,7 +209,9 @@ class _SettingsScreenState extends State<SettingsScreen>
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+          color: Theme.of(
+            context,
+          ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),
@@ -291,7 +293,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -319,8 +321,8 @@ class _SettingsScreenState extends State<SettingsScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],

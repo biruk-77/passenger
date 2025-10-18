@@ -10,12 +10,9 @@ import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/nearby_driver.dart';
 import 'widgets.dart';
+import '../../theme/color.dart';
 
-// --- THEME CONSTANTS - ADAPTED FROM THE "COOL" PLANNING PANEL ---
-const Color _backgroundColorStart = Color.fromARGB(194, 5, 81, 158);
-
-const Color _backgroundColorEnd = Color(0xFF004080);
-const Color _goldAccent = Color(0xFFD4AF37);
+// Use shared theme colors for consistency with other panels
 const String _primaryFont = 'Inter';
 const String _headingFont = 'PlayfairDisplay';
 
@@ -68,7 +65,11 @@ class PostTripRatingPanelContent extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [_backgroundColorStart, _backgroundColorEnd],
+          colors: [
+            // Align with app theme background treatment
+            AppColors.primaryColor,
+            AppColors.background,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -88,7 +89,7 @@ class PostTripRatingPanelContent extends StatelessWidget {
                 l10n.postTripCompleted,
                 style: const TextStyle(
                   fontFamily: _headingFont,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -98,7 +99,7 @@ class PostTripRatingPanelContent extends StatelessWidget {
                 l10n.postTripRateExperience,
                 style: TextStyle(
                   fontFamily: _primaryFont,
-                  color: Colors.white.withOpacity(0.7),
+                  color: AppColors.textSecondary.withValues(alpha: 0.9),
                   fontSize: 16,
                 ),
               ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.5),
@@ -138,7 +139,7 @@ class PostTripRatingPanelContent extends StatelessWidget {
                   l10n.postTripSkip,
                   style: TextStyle(
                     fontFamily: _primaryFont,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 16,
                   ),
                 ),
@@ -175,20 +176,26 @@ class _DriverRatingCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: AppColors.cardBackground.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(
+              color: AppColors.borderColor.withValues(alpha: 0.5),
+            ),
           ),
           child: Column(
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: AppColors.background.withValues(alpha: 0.4),
                 backgroundImage: driverPhotoUrl != null
                     ? NetworkImage(driverPhotoUrl)
                     : null,
                 child: driverPhotoUrl == null
-                    ? const Icon(Icons.person, size: 40, color: Colors.white70)
+                    ? const Icon(
+                        Icons.person,
+                        size: 40,
+                        color: AppColors.textSecondary,
+                      )
                     : null,
               ),
               const SizedBox(height: 16),
@@ -198,7 +205,7 @@ class _DriverRatingCard extends StatelessWidget {
                   fontFamily: _primaryFont,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -209,7 +216,7 @@ class _DriverRatingCard extends StatelessWidget {
                 itemCount: 5,
                 itemPadding: const EdgeInsets.symmetric(horizontal: 6.0),
                 itemBuilder: (context, _) =>
-                    const Icon(Icons.star_rounded, color: _goldAccent),
+                    const Icon(Icons.star_rounded, color: AppColors.goldenrod),
                 onRatingUpdate: onRatingChanged,
               ),
             ],
@@ -266,9 +273,11 @@ class _TripSummaryCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: AppColors.cardBackground.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(
+              color: AppColors.borderColor.withValues(alpha: 0.5),
+            ),
           ),
           child: Column(
             children: [
@@ -280,7 +289,7 @@ class _TripSummaryCard extends StatelessWidget {
                       l10n.postTripFinalFare,
                       formattedFare,
                     ),
-                    VerticalDivider(color: Colors.white.withOpacity(0.2)),
+                    VerticalDivider(color: Colors.white.withValues(alpha: 0.2)),
                     _buildTripSummaryItem(
                       l10n.postTripDistance,
                       formattedDistance,
@@ -290,11 +299,13 @@ class _TripSummaryCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Divider(color: Colors.white.withOpacity(0.1)),
+                child: Divider(
+                  color: AppColors.borderColor.withValues(alpha: 0.3),
+                ),
               ),
               _buildTripRouteRow(
                 Icons.my_location,
-                Colors.lightBlueAccent,
+                AppColors.electricCyan,
                 startAddress,
               ),
               Padding(
@@ -304,13 +315,13 @@ class _TripSummaryCard extends StatelessWidget {
                   child: Container(
                     height: 12,
                     width: 2,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
               ),
               _buildTripRouteRow(
                 Icons.flag_rounded,
-                Colors.redAccent,
+                AppColors.error,
                 destinationAddress,
               ),
             ],
@@ -327,7 +338,7 @@ class _TripSummaryCard extends StatelessWidget {
           label.toUpperCase(),
           style: TextStyle(
             fontFamily: _primaryFont,
-            color: Colors.white.withOpacity(0.6),
+            color: AppColors.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
@@ -338,7 +349,7 @@ class _TripSummaryCard extends StatelessWidget {
           value,
           style: const TextStyle(
             fontFamily: _primaryFont,
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -357,7 +368,7 @@ class _TripSummaryCard extends StatelessWidget {
             address,
             style: const TextStyle(
               fontFamily: _primaryFont,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 14,
             ),
             overflow: TextOverflow.ellipsis,
@@ -409,19 +420,21 @@ class _FeedbackSection extends StatelessWidget {
               label: Text(tagValue),
               selected: isSelected,
               onSelected: (_) => onTagTapped(tagKey),
-              backgroundColor: Colors.white.withOpacity(0.1),
-              selectedColor: _goldAccent,
+              backgroundColor: AppColors.background.withValues(alpha: 0.4),
+              selectedColor: AppColors.goldenrod,
               labelStyle: TextStyle(
                 fontFamily: _primaryFont,
                 color: isSelected
                     ? Colors.black
-                    : Colors.white.withOpacity(0.8),
+                    : AppColors.textPrimary.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w600,
               ),
               checkmarkColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(100),
-                side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                side: BorderSide(
+                  color: AppColors.borderColor.withValues(alpha: 0.4),
+                ),
               ),
             );
           }).toList(),
@@ -430,20 +443,27 @@ class _FeedbackSection extends StatelessWidget {
         TextField(
           controller: commentController,
           maxLines: 3,
-          style: const TextStyle(color: Colors.white, fontFamily: _primaryFont),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: _primaryFont,
+          ),
           decoration: InputDecoration(
             hintText: l10n.postTripAddComment,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            hintStyle: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+            ),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
+            fillColor: AppColors.cardBackground.withValues(alpha: 0.6),
             contentPadding: const EdgeInsets.all(16),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+              borderSide: BorderSide(
+                color: AppColors.borderColor.withValues(alpha: 0.5),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: _goldAccent),
+              borderSide: const BorderSide(color: AppColors.goldenrod),
             ),
           ),
         ),
@@ -471,11 +491,11 @@ class _SubmitButton extends StatelessWidget {
         duration: 300.ms,
         height: 60,
         decoration: BoxDecoration(
-          color: _goldAccent,
+          color: AppColors.goldenrod,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _goldAccent.withOpacity(0.5),
+              color: AppColors.goldenrod.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: -5,
               offset: const Offset(0, 10),

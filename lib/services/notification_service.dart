@@ -1,4 +1,3 @@
-// FILE: /lib/services/notification_service.dart
 /* CRITICAL: DO NOT REMOVE OR ABBREVIATE. 
       This file must be delivered complete. 
       Any changes must preserve the exported public API. */
@@ -133,16 +132,17 @@ class NotificationService {
     }
   }
 
-  /// Shows a persistent notification for ride updates.
+  /// Shows a notification for ride updates. Can be persistent or dismissible.
   Future<void> showRideUpdateNotification({
     required String title,
     required String body,
     String? payload,
     String? imageUrl,
+    bool isOngoing = true,
   }) async {
     Logger.info(
       'NotificationService',
-      "Showing notification: $title - Image: $imageUrl",
+      "Showing notification: $title - Image: $imageUrl - Ongoing: $isOngoing",
     );
 
     String? largeIconPath;
@@ -182,13 +182,8 @@ class NotificationService {
           channelDescription: 'Notifications about your ride status.',
           importance: Importance.max,
           priority: Priority.high,
-
-          // --- FIX ---
-          // ❌ The 'smallIcon' parameter is REMOVED from here.
-          // The icon from init() will be used automatically.
-          ongoing: true,
-          autoCancel: false,
-
+          ongoing: isOngoing,
+          autoCancel: !isOngoing,
           largeIcon: FilePathAndroidBitmap(largeIconPath),
           styleInformation: BigPictureStyleInformation(
             FilePathAndroidBitmap(bigPicturePath),
@@ -206,14 +201,10 @@ class NotificationService {
           'ride_updates_channel',
           'Ride Updates',
           channelDescription: 'Notifications about your ride status.',
-          importance: Importance.high,
+          importance: Importance.max,
           priority: Priority.high,
-
-          // --- FIX (APPLIED HERE FOR CONSISTENCY) ---
-          // ❌ The 'smallIcon' parameter is REMOVED from here as well.
-          ongoing: true,
-          autoCancel: false,
-
+          ongoing: isOngoing,
+          autoCancel: !isOngoing,
           enableVibration: true,
           playSound: true,
         );

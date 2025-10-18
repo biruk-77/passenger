@@ -199,7 +199,7 @@ class _DriverOnTheWayPanelContentState extends State<DriverOnTheWayPanelContent>
               ),
               radius: 1.5,
               colors: [
-                theme.colorScheme.secondary.withOpacity(0.7),
+                theme.colorScheme.secondary.withValues(alpha: 0.7),
                 theme.colorScheme.background,
               ],
               stops: const [0.0, 1.0],
@@ -228,8 +228,8 @@ class _DriverOnTheWayPanelContentState extends State<DriverOnTheWayPanelContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.secondary.withOpacity(0.2),
+                  theme.colorScheme.primary.withValues(alpha: 0.3),
+                  theme.colorScheme.secondary.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -263,7 +263,7 @@ class _Header extends StatelessWidget {
           textAlign: TextAlign.center,
           style: theme.textTheme.headlineSmall?.copyWith(
             fontFamily: 'PlayfairDisplay',
-            color: theme.colorScheme.onBackground,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -273,7 +273,7 @@ class _Header extends StatelessWidget {
               : l10n.driverOnWayMeetAtPickup,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onBackground.withOpacity(0.7),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -361,7 +361,9 @@ class _EtaDisplay extends StatelessWidget {
                 value: value,
                 strokeWidth: 6,
                 color: theme.colorScheme.primary,
-                backgroundColor: theme.colorScheme.onSurface.withOpacity(0.1),
+                backgroundColor: theme.colorScheme.onSurface.withValues(
+                  alpha: 0.1,
+                ),
                 strokeCap: StrokeCap.round,
               ),
             ),
@@ -369,7 +371,7 @@ class _EtaDisplay extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: theme.colorScheme.onSurface.withOpacity(0.05),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
             ),
           ),
           AnimatedSwitcher(
@@ -379,7 +381,7 @@ class _EtaDisplay extends StatelessWidget {
               key: ValueKey(timeText),
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontFamily: 'monospace',
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 fontSize: timeText.length > 5 ? 20 : 32,
                 shadows: [
                   Shadow(blurRadius: 20.0, color: theme.colorScheme.primary),
@@ -422,7 +424,9 @@ class _DriverVehicleCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundColor: theme.colorScheme.onSurface.withOpacity(0.1),
+                backgroundColor: theme.colorScheme.onSurface.withValues(
+                  alpha: 0.1,
+                ),
                 backgroundImage:
                     driverPhotoUrl != null && driverPhotoUrl.isNotEmpty
                     ? NetworkImage(driverPhotoUrl)
@@ -431,7 +435,9 @@ class _DriverVehicleCard extends StatelessWidget {
                     ? Icon(
                         Icons.person,
                         size: 32,
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                       )
                     : null,
               ),
@@ -455,7 +461,9 @@ class _DriverVehicleCard extends StatelessWidget {
                         Text(
                           'ID: ${booking?.driverId ?? "N/A"}',
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
                           ),
                         ),
                       ],
@@ -490,10 +498,12 @@ class _DriverVehicleCard extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.shadowColor.withOpacity(0.4),
+                        color: theme.shadowColor.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: theme.colorScheme.onSurface.withOpacity(0.3),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.3,
+                          ),
                           width: 1.5,
                         ),
                       ),
@@ -682,10 +692,10 @@ class _ActionButtonState extends State<_ActionButton> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withOpacity(0.1),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: theme.colorScheme.onSurface.withOpacity(0.2),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -768,10 +778,10 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: theme.colorScheme.onSurface.withOpacity(0.05),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
             ),
           ),
           child: child,
@@ -802,7 +812,7 @@ class _DetailRow extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             size: 18,
           ),
           const SizedBox(width: 12),
@@ -811,7 +821,7 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               '$label:',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -837,7 +847,7 @@ class _CardDivider extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Divider(
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
         height: 1,
       ),
     );

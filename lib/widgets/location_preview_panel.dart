@@ -55,7 +55,7 @@ class LocationPreviewPanel extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 30,
                 spreadRadius: 5,
                 offset: const Offset(0, 10),
@@ -70,13 +70,15 @@ class LocationPreviewPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF0D1B3E).withOpacity(0.9),
-                      const Color(0xFF040A1A).withOpacity(0.95),
+                      const Color(0xFF0D1B3E).withValues(alpha: 0.9),
+                      const Color(0xFF040A1A).withValues(alpha: 0.95),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                  ),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -104,8 +106,8 @@ class LocationPreviewPanel extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.goldenrod.withOpacity(0.3),
-                Colors.orangeAccent.withOpacity(0.2),
+                AppColors.goldenrod.withValues(alpha: 0.3),
+                Colors.orangeAccent.withValues(alpha: 0.2),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -143,7 +145,7 @@ class LocationPreviewPanel extends StatelessWidget {
                   place.secondaryText!,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w400,
                   ),
                   maxLines: 1,
@@ -164,12 +166,12 @@ class LocationPreviewPanel extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
           Icons.close_rounded,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
           size: 20,
         ),
       ),
@@ -331,7 +333,7 @@ class LocationPreviewPanel extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 2,
-          shadowColor: color.withOpacity(0.3),
+          shadowColor: color.withValues(alpha: 0.3),
         ),
         label: Text(
           text,
@@ -389,10 +391,10 @@ class LocationPreviewPanel extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
-        side: BorderSide(color: color.withOpacity(0.5)),
+        side: BorderSide(color: color.withValues(alpha: 0.5)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: color.withOpacity(0.1),
+        backgroundColor: color.withValues(alpha: 0.1),
       ),
       label: Text(
         text,
@@ -427,7 +429,7 @@ class LocationPreviewPanel extends StatelessWidget {
       color: const Color(0xFF1A2C55),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.white.withOpacity(0.2)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
       ),
       elevation: 8,
       offset: const Offset(0, -120),
@@ -456,9 +458,9 @@ class LocationPreviewPanel extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: const Icon(
           Icons.bookmark_add_rounded,

@@ -26,7 +26,7 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
     with TickerProviderStateMixin {
   // --- NATIVE INTEGRATION & PERMISSIONS ---
   static const MethodChannel _smsChannel = MethodChannel(
-    'com.example.pasenger/sms',
+    'com.dailytransport.pasenger/sms',
   );
   bool _hasSmsPermission = false;
   bool _permissionRequestInProgress = false;
@@ -63,8 +63,6 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
         _burstController.forward();
       }
     });
-
-    // Pre-fill user data
     if (widget.defaultName != null && widget.defaultName!.isNotEmpty) {
       _nameController.text = widget.defaultName!;
     }
@@ -75,7 +73,6 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
 
   @override
   void dispose() {
-    // --- ✅ NEW: Dispose new controllers ---
     _gradientController.dispose();
     _burstController.dispose();
     _nameController.dispose();
@@ -84,8 +81,6 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
     _destinationController.dispose();
     super.dispose();
   }
-
-  // --- All logic methods below remain unchanged, only UI build methods are updated ---
 
   Future<String?> _getStealthLocation() async {
     try {
@@ -309,9 +304,11 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.cardBackground.withOpacity(0.5),
+              color: AppColors.cardBackground.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.borderColor.withOpacity(0.5)),
+              border: Border.all(
+                color: AppColors.borderColor.withValues(alpha: 0.5),
+              ),
             ),
             child: Form(
               key: _formKey,
@@ -508,7 +505,7 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -537,8 +534,8 @@ class _OfflineSmsScreenState extends State<OfflineSmsScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],

@@ -176,9 +176,11 @@ class _ContractModePanelState extends State<ContractModePanel>
           padding: const EdgeInsets.fromLTRB(24.0, 20.0, 16.0, 16.0),
           decoration: BoxDecoration(
             // CORRECTED: Using theme colors
-            color: AppColors.cardBackground.withOpacity(0.5),
+            color: AppColors.cardBackground.withValues(alpha: 0.5),
             border: Border(
-              bottom: BorderSide(color: AppColors.goldenrod.withOpacity(0.2)),
+              bottom: BorderSide(
+                color: AppColors.goldenrod.withValues(alpha: 0.2),
+              ),
             ),
           ),
           child: Row(
@@ -210,11 +212,11 @@ class _ContractModePanelState extends State<ContractModePanel>
               ),
               Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       // CORRECTED: Using theme colors
                       border: Border.all(
-                        color: AppColors.goldenrod.withOpacity(0.3),
+                        color: AppColors.goldenrod.withValues(alpha: 0.3),
                       ),
                     ),
                     child: IconButton(
@@ -393,9 +395,11 @@ class _ContractModePanelState extends State<ContractModePanel>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             // CORRECTED: Using theme colors
-            color: AppColors.goldenrod.withOpacity(0.1),
+            color: AppColors.goldenrod.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.goldenrod.withOpacity(0.3)),
+            border: Border.all(
+              color: AppColors.goldenrod.withValues(alpha: 0.3),
+            ),
           ),
           // CORRECTED: Using theme colors
           child: Icon(icon, color: AppColors.goldenrod, size: 20),
@@ -437,16 +441,16 @@ class _ContractModePanelState extends State<ContractModePanel>
               margin: const EdgeInsets.only(bottom: 16),
               height: height,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
             )
             .animate(onPlay: (controller) => controller.repeat())
             // CORRECTED: Using theme colors
             .shimmer(
               duration: 1500.ms,
-              color: AppColors.goldenrod.withOpacity(0.1),
+              color: AppColors.goldenrod.withValues(alpha: 0.1),
             );
       }),
     );
@@ -460,10 +464,10 @@ class _ContractModePanelState extends State<ContractModePanel>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         // CORRECTED: Using theme colors
-        border: Border.all(color: AppColors.error.withOpacity(0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -488,11 +492,11 @@ class _ContractModePanelState extends State<ContractModePanel>
             onPressed: onRetry,
             style: ElevatedButton.styleFrom(
               // CORRECTED: Using theme colors
-              backgroundColor: AppColors.error.withOpacity(0.2),
+              backgroundColor: AppColors.error.withValues(alpha: 0.2),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                side: BorderSide(color: AppColors.error.withValues(alpha: 0.5)),
               ),
             ),
             child: Text(l10n.contractPanelRetryButton),
@@ -510,10 +514,10 @@ class _ContractModePanelState extends State<ContractModePanel>
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20),
         // CORRECTED: Using theme colors
-        border: Border.all(color: AppColors.goldenrod.withOpacity(0.2)),
+        border: Border.all(color: AppColors.goldenrod.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -521,7 +525,7 @@ class _ContractModePanelState extends State<ContractModePanel>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               // CORRECTED: Using theme colors
-              color: AppColors.goldenrod.withOpacity(0.1),
+              color: AppColors.goldenrod.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             // CORRECTED: Using theme colors
@@ -559,7 +563,7 @@ class _ContractModePanelState extends State<ContractModePanel>
         // CORRECTED: Using theme colors
         Expanded(
           child: Divider(
-            color: AppColors.goldenrod.withOpacity(0.3),
+            color: AppColors.goldenrod.withValues(alpha: 0.3),
             thickness: 1,
           ),
         ),
@@ -570,7 +574,7 @@ class _ContractModePanelState extends State<ContractModePanel>
         ),
         Expanded(
           child: Divider(
-            color: AppColors.goldenrod.withOpacity(0.3),
+            color: AppColors.goldenrod.withValues(alpha: 0.3),
             thickness: 1,
           ),
         ),
@@ -591,7 +595,7 @@ class _ContractModePanelState extends State<ContractModePanel>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -619,8 +623,8 @@ class _ContractModePanelState extends State<ContractModePanel>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -657,8 +661,8 @@ class _PremiumSubscriptionCard extends StatelessWidget {
               onTap: onTap,
               borderRadius: BorderRadius.circular(20),
               // CORRECTED: Using theme colors
-              splashColor: AppColors.goldenrod.withOpacity(0.2),
-              highlightColor: AppColors.goldenrod.withOpacity(0.1),
+              splashColor: AppColors.goldenrod.withValues(alpha: 0.2),
+              highlightColor: AppColors.goldenrod.withValues(alpha: 0.1),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: BackdropFilter(
@@ -669,8 +673,8 @@ class _PremiumSubscriptionCard extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           // CORRECTED: Using theme colors
-                          AppColors.goldenrod.withOpacity(0.15),
-                          AppColors.goldenrod.withOpacity(0.05),
+                          AppColors.goldenrod.withValues(alpha: 0.15),
+                          AppColors.goldenrod.withValues(alpha: 0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -678,7 +682,7 @@ class _PremiumSubscriptionCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       // CORRECTED: Using theme colors
                       border: Border.all(
-                        color: AppColors.goldenrod.withOpacity(0.3),
+                        color: AppColors.goldenrod.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -754,8 +758,8 @@ class _PremiumContractCard extends StatelessWidget {
               onTap: onTap,
               borderRadius: BorderRadius.circular(20),
               // CORRECTED: Using theme colors
-              splashColor: AppColors.goldenrod.withOpacity(0.2),
-              highlightColor: AppColors.goldenrod.withOpacity(0.1),
+              splashColor: AppColors.goldenrod.withValues(alpha: 0.2),
+              highlightColor: AppColors.goldenrod.withValues(alpha: 0.1),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: BackdropFilter(
@@ -763,9 +767,11 @@ class _PremiumContractCard extends StatelessWidget {
                   child: Container(
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -776,14 +782,15 @@ class _PremiumContractCard extends StatelessWidget {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               // CORRECTED: Using theme colors
-                              color: AppColors.goldenrod.withOpacity(0.1),
+                              color: AppColors.goldenrod.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                           child: Icon(
+                            child: Icon(
                               Icons.rocket_launch_rounded,
                               color: AppColors.goldenrod,
                               size: 28,
-                            ),),
+                            ),
+                          ),
                           const Spacer(),
                           Text(
                             contract.contractType,
@@ -805,7 +812,7 @@ class _PremiumContractCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               // CORRECTED: Using theme colors
-                              color: AppColors.goldenrod.withOpacity(0.2),
+                              color: AppColors.goldenrod.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

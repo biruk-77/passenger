@@ -1,7 +1,6 @@
 // FILE: lib/models/contract/trip.dart
 // ✅ UPGRADED AND ROBUST VERSION
 
-import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Trip {

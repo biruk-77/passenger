@@ -132,7 +132,7 @@ class _MyTripsScreenState extends State<MyTripsScreen>
                 .shimmer(
                   delay: 2.seconds,
                   duration: 1.5.seconds,
-                  color: AppColors.accentColor.withOpacity(0.5),
+                  color: AppColors.accentColor.withValues(alpha: 0.5),
                 )
                 .animate()
                 .fadeIn(duration: 600.ms, delay: 400.ms),
@@ -203,7 +203,7 @@ class _MyTripsScreenState extends State<MyTripsScreen>
                         .then(delay: 100.ms)
                         .shimmer(
                           duration: 1.seconds,
-                          color: AppColors.primaryColor.withOpacity(0.3),
+                          color: AppColors.primaryColor.withValues(alpha: 0.3),
                         );
                   },
                 );
@@ -284,7 +284,7 @@ class _MyTripsScreenState extends State<MyTripsScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -312,8 +312,8 @@ class _MyTripsScreenState extends State<MyTripsScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -352,12 +352,12 @@ class _TripCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor.withOpacity(0.5),
+        color: AppColors.primaryColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accentColor.withOpacity(0.3)),
+        border: Border.all(color: AppColors.accentColor.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.electricCyan.withOpacity(0.05),
+            color: AppColors.electricCyan.withValues(alpha: 0.05),
             blurRadius: 20,
             spreadRadius: -5,
             offset: const Offset(0, 4),
@@ -406,7 +406,7 @@ class _TripCard extends StatelessWidget {
                 ),
                 Divider(
                   height: 24,
-                  color: AppColors.borderColor.withOpacity(0.2),
+                  color: AppColors.borderColor.withValues(alpha: 0.2),
                 ),
                 _buildInfoRow(
                   l10n.myTripsScreenFromPrefix,
@@ -495,7 +495,7 @@ class _ShimmerCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

@@ -1,90 +1,58 @@
-// lib/screens/settings_subscreens/help_support_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-class HelpSupportScreen extends StatelessWidget {
+class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
+
+  @override
+  State<HelpSupportScreen> createState() => _HelpSupportScreenState();
+}
+
+class _HelpSupportScreenState extends State<HelpSupportScreen> {
+  // --- WebView Logic is now inside this screen ---
+  final String _url = 'https://bankeru.com/help.html';
+  InAppWebViewController? _controller;
+  int _progress = 0;
+  // --- End of WebView Logic ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        // --- ✅ FIX: Removed the `const` keyword from this list ---
-        children: [
-          _buildSectionTitle('Frequently Asked Questions (FAQ)'),
-          _buildFaqItem(
-            question: 'How do I book a ride?',
-            answer:
-                'To book a ride, set your pickup and destination locations on the home screen map. Choose your preferred vehicle type and confirm your request. A nearby driver will be assigned to you shortly.',
-          ),
-          _buildFaqItem(
-            question: 'How is the fare calculated?',
-            answer:
-                'Fares are calculated based on the distance of the trip and the vehicle type selected. You will see an estimated fare before you confirm your booking. For contract rides, the fare is predetermined in your subscription.',
-          ),
-          _buildFaqItem(
-            question: 'Can I cancel a ride?',
-            answer:
-                'Yes, you can cancel a ride before a driver starts the trip. Please note that a cancellation fee may apply if you cancel after a driver has already been dispatched and is on their way to you.',
-          ),
-          const SizedBox(height: 24), // SizedBox itself can be const
-          _buildSectionTitle('Contact Us'),
-          _buildContactItem(
-            icon: Icons.phone,
-            title: 'Customer Support Hotline',
-            subtitle: '+251-9XX-XXXXXX',
-          ),
-          _buildContactItem(
-            icon: Icons.email,
-            title: 'Support Email',
-            subtitle: 'support@yourcompany.com',
-          ),
-          _buildContactItem(
-            icon: Icons.location_on,
-            title: 'Our Office',
-            subtitle: 'Bole Road, Addis Ababa, Ethiopia',
+      appBar: AppBar(
+        title: const Text('Help & Support'),
+        // --- AppBar additions from the old WebViewScreen ---
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _controller?.reload(),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: _progress > 0 && _progress < 100
+              ? LinearProgressIndicator(value: _progress / 100)
+              : const SizedBox.shrink(),
+        ),
+      ),
+      body: SafeArea(
+        // --- The body is now the InAppWebView widget directly ---
+        child: InAppWebView(
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            transparentBackground: true,
+            useShouldOverrideUrlLoading: true,
+            mediaPlaybackRequiresUserGesture: false,
+          ),
+          initialUrlRequest: URLRequest(url: WebUri(_url)),
+          onWebViewCreated: (controller) => _controller = controller,
+          onProgressChanged: (controller, progress) {
+            setState(() => _progress = progress);
+          },
+          onReceivedError: (controller, request, error) {
+            debugPrint("WebView error: ${error.description}");
+          },
+        ),
       ),
     );
   }
-}
-
-// Helper Widgets (These do not need to be changed)
-Widget _buildSectionTitle(String title) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-    ),
-  );
-}
-
-Widget _buildFaqItem({required String question, required String answer}) {
-  return ExpansionTile(
-    title: Text(question, style: const TextStyle(fontWeight: FontWeight.w600)),
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Text(answer),
-      ),
-    ],
-  );
-}
-
-Widget _buildContactItem({
-  required IconData icon,
-  required String title,
-  required String subtitle,
-}) {
-  return Card(
-    margin: const EdgeInsets.symmetric(vertical: 4.0),
-    child: ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
-    ),
-  );
 }

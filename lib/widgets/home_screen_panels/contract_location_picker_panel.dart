@@ -121,23 +121,94 @@ class _ContractLocationPickerPanelState
     String placeId, {
     PlaceDetails? recentPlace,
   }) async {
+    // --- 1. CLEAR THE UI IMMEDIATELY ---
+    FocusScope.of(context).unfocus(); // Hide keyboard
+    if (mounted) {
+      setState(() {
+        _predictions = []; // Clear the prediction list
+        _searchController.clear(); // Clear the text in the search bar
+      });
+    }
+    // --- END OF CLEARING LOGIC ---
+
     try {
       final PlaceDetails place;
       if (recentPlace != null) {
+        // If we are tapping a recent search, the data is already complete.
         place = recentPlace;
       } else {
+        // --- THIS IS THE CORRECTED, NULL-SAFE BLOCK ---
         final details = await widget.googleMapsService.getPlaceDetails(placeId);
-        final location = details['geometry']['location'];
+
+        // CRITICAL FIX: Check if details are null before proceeding.
+        if (details == null) {
+          debugPrint(
+            "Error: getPlaceDetails returned null for placeId $placeId",
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  "Could not load location details. Please try again.",
+                ),
+              ),
+            );
+          }
+          return; // Stop execution
+        }
+
+        // Now it's safe to access the keys because 'details' is not null.
+        final location = details['geometry']?['location'];
+
+        // Also check if the location data inside is valid
+        if (location == null ||
+            location['lat'] == null ||
+            location['lng'] == null) {
+          debugPrint(
+            "Error: Place details are missing geometry/location information.",
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Location coordinates not found for this place."),
+              ),
+            );
+          }
+          return; // Stop execution
+        }
+
         place = PlaceDetails(
           primaryText: details['name'] ?? 'Unknown Location',
-          secondaryText: details['formatted_address'],
+          secondaryText:
+              details['formatted_address'] ?? 'Address not available',
           placeId: placeId,
           coordinates: LatLng(location['lat'], location['lng']),
         );
+        // --- END OF FIX ---
       }
+
+      // Add to recents before passing it to the home screen
+      if (mounted) {
+        setState(() {
+          // Prevent duplicates in recent searches
+          _recentSearches.removeWhere((p) => p.placeId == place.placeId);
+          _recentSearches.insert(0, place);
+          // Optional: limit the number of recents
+          if (_recentSearches.length > 10) {
+            _recentSearches.removeLast();
+          }
+        });
+      }
+
+      // This part remains the same
       widget.onPlaceSelected(place);
     } catch (e) {
       debugPrint("Error getting place details: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("An error occurred: ${e.toString()}")),
+        );
+      }
     }
   }
 
@@ -244,7 +315,7 @@ class _ContractLocationPickerPanelState
         style: const TextStyle(color: Colors.white, fontFamily: _primaryFont),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
           prefixIcon: const Icon(Icons.search, color: _goldAccent),
           suffixIcon: _isSearchingNetwork
               ? const Padding(
@@ -260,14 +331,14 @@ class _ContractLocationPickerPanelState
                 )
               : null,
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
+          fillColor: Colors.white.withValues(alpha: 0.05),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
@@ -355,14 +426,14 @@ class _ContractLocationPickerPanelState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.3), size: 48),
+          Icon(icon, color: Colors.white.withValues(alpha: 0.3), size: 48),
           const SizedBox(height: 16),
           Text(
             message,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: _primaryFont,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 16,
             ),
           ),
@@ -385,7 +456,7 @@ class _ContractLocationPickerPanelState
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -413,8 +484,8 @@ class _ContractLocationPickerPanelState
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -455,7 +526,7 @@ class _SearchResultTile extends StatelessWidget {
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withValues(alpha: 0.6),
           fontFamily: _primaryFont,
         ),
         maxLines: 1,

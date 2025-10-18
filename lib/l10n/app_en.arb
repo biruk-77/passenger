@@ -383,6 +383,7 @@
   "errorEnterCurrentPassword": "Please enter your current password to set a new one.",
   "errorPasswordTooShort": "Password must be at least 6 characters.",
   "errorPasswordsDoNotMatch": "Passwords do not match.",
+  "errorEnterregex":  "check special characters or lower and upper case.",
   "fullName": "Full Name",
   "phoneNumber": "Phone Number",
   "emailAddress": "Email Address",
@@ -844,7 +845,38 @@
     "resendingOtp": "Resending OTP...",
     "@resendingOtp": {
         "description": "Snackbar message shown when a new OTP is being sent"
-    }
+    },  "mapLayersTitle": "Map Layers",
+  "mapLayersDark": "Dark",
+  "mapLayersLight": "Light",
+  "mapLayersSatellite": "Satellite", "myTransactions": "My Transactions",
+  "transactionHistory": "Transaction History",
+  "all": "All",
+  "paid": "Paid",
+  "pending": "Pending",
+  "above": "Above",
+  "moreFilters": "More Filters",
+  "dateRange": "Date Range",
+  "anyDate": "Any Date",
+  "sortBy": "Sort By",
+  "sortNewestFirst": "Newest First",
+  "sortOldestFirst": "Oldest First",
+  "sortAmountHighest": "Amount (High to Low)",
+  "sortAmountLowest": "Amount (Low to High)",
+  "clear": "Clear",
+  "applyFilters": "Apply",
+  "transactionID": "Transaction ID",
+  "paymentMethod": "Payment Method",
+  "bookingID": "Booking ID",
+  "date": "Date",
+  "noMatchingTransactions": "No Transactions Match Your Filters",
+  "tryAdjustingFilters": "Try adjusting or clearing your search filters to see results.",
+  "noTransactionsYet": "No Transactions Yet",
+  "yourRecentTransactionsWillAppearHere": "Your recent transactions will appear here.",
+  "errorPrefix": "An Error Occurred",
+  "retry": "Retry",
+  "transactionStatusCompleted": "Completed",
+  "transactionStatusPending": "Pending",
+  "transactionStatusFailed": "Failed"
 
 
 

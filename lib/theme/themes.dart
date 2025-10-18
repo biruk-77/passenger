@@ -15,12 +15,10 @@ class AppThemes {
       primary:
           AppColors.goldenrod, // Goldenrod remains the primary action color
       secondary: AppColors.accentColor,
-      background: AppColors.background,
       surface: AppColors
           .cardBackground, // Cards will have the lighter blue-grey color
       onPrimary: Colors.black,
       onSecondary: AppColors.textPrimary,
-      onBackground: AppColors.textPrimary,
       onSurface: AppColors.textPrimary,
       error: AppColors.error,
       onError: Colors.black,
@@ -54,8 +52,8 @@ class AppThemes {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.secondaryColor.withOpacity(
-        0.5,
+      fillColor: AppColors.secondaryColor.withValues(
+        alpha: 0.5,
       ), // Use a darker shade for inputs
       hintStyle: const TextStyle(color: AppColors.textSubtle),
       border: OutlineInputBorder(
@@ -64,7 +62,9 @@ class AppThemes {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.borderColor.withOpacity(0.5)),
+        borderSide: BorderSide(
+          color: AppColors.borderColor.withValues(alpha: 0.5),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -87,8 +87,8 @@ class AppThemes {
         fontWeight: FontWeight.w500,
         fontSize: 16,
       ),
-    ), // ✅ THIS IS NOW A COMMA
-  ); // ✅ AND THIS IS THE CORRECT CLOSING );
+    ),
+  );
 
   /// --- LIGHT THEME ---
   /// A professional light theme that complements your brand colors.
@@ -99,12 +99,10 @@ class AppThemes {
     scaffoldBackgroundColor: const Color(0xFFF4F6F8),
     colorScheme: const ColorScheme.light(
       primary: AppColors.goldenrod,
-      secondary: AppColors.primaryColor,
-      background: Color(0xFFF4F6F8),
+      secondary: AppColors.primaryColor, // Will now use the new primary color
       surface: Colors.white,
       onPrimary: Colors.black,
       onSecondary: Colors.white,
-      onBackground: Colors.black87,
       onSurface: Colors.black87,
       error: AppColors.error,
       onError: Colors.white,
@@ -129,7 +127,7 @@ class AppThemes {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.black.withOpacity(0.05),
+      fillColor: Colors.black.withValues(alpha: 0.05),
       hintStyle: const TextStyle(color: Colors.black45),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -137,7 +135,10 @@ class AppThemes {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
+        borderSide: const BorderSide(
+          color: AppColors.primaryColor,
+          width: 2,
+        ), // Will use new color on focus
       ),
     ),
   );

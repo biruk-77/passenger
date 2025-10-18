@@ -1,5 +1,5 @@
 // lib/models/socket_models.dart
-import 'dart:convert';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // =========================================================================
@@ -15,7 +15,7 @@ class BookingStatusUpdate {
   // ✅ --- FIX: ADDED THESE NEW, NULLABLE FIELDS ---
   // These will be populated with data when the trip is completed.
   final double? fareFinal;
-  final double? distanceKm;
+  final double? distanceTraveled;
 
   BookingStatusUpdate({
     required this.bookingId,
@@ -24,7 +24,7 @@ class BookingStatusUpdate {
     this.vehicle,
     // ✅ Added to the constructor
     this.fareFinal,
-    this.distanceKm,
+    this.distanceTraveled,
   });
 
   // ✅ --- THIS FACTORY IS NOW CORRECTED TO PARSE THE NEW FIELDS ---
@@ -42,7 +42,7 @@ class BookingStatusUpdate {
 
       // ✅ Safely parse the new numeric fields. They can be null.
       fareFinal: (data['fareFinal'] as num?)?.toDouble(),
-      distanceKm: (data['distanceKm'] as num?)?.toDouble(),
+      distanceTraveled: (data['distanceTraveled'] as num?)?.toDouble(),
 
       // This logic for vehicle remains the same
       vehicle: data.containsKey('vehicle') && data['vehicle'] is Map
@@ -114,28 +114,37 @@ class DriverLocationUpdate {
   }
 }
 
+// --- REPLACE your old EtaUpdate class with this new, correct version ---
 class EtaUpdate {
   final String bookingId;
-  final String driverId;
-  final int etaMinutes;
-  final String? message;
-  final DateTime timestamp;
+  final int etaSeconds;
+  final String etaText; // ✅ The field we need for the UI
+  final LatLng driverLocation;
+  final LatLng destination;
 
   EtaUpdate({
     required this.bookingId,
-    required this.driverId,
-    required this.etaMinutes,
-    this.message,
-    required this.timestamp,
+    required this.etaSeconds,
+    required this.etaText,
+    required this.driverLocation,
+    required this.destination,
   });
 
   factory EtaUpdate.fromJson(Map<String, dynamic> json) {
+    // This factory now correctly parses the data from your log
     return EtaUpdate(
       bookingId: json['bookingId'] as String? ?? '',
-      driverId: json['driverId'] as String? ?? '',
-      etaMinutes: (json['etaMinutes'] as num?)?.toInt() ?? 0,
-      message: json['message'] as String?,
-      timestamp: DateTime.tryParse(json['timestamp'] ?? '') ?? DateTime.now(),
+      etaSeconds: (json['etaSeconds'] as num?)?.toInt() ?? 0,
+      etaText:
+          json['etaText'] as String? ?? '...', // Use the text from the backend
+      driverLocation: LatLng(
+        (json['driverLocation']?['latitude'] as num?)?.toDouble() ?? 0.0,
+        (json['driverLocation']?['longitude'] as num?)?.toDouble() ?? 0.0,
+      ),
+      destination: LatLng(
+        (json['destination']?['latitude'] as num?)?.toDouble() ?? 0.0,
+        (json['destination']?['longitude'] as num?)?.toDouble() ?? 0.0,
+      ),
     );
   }
 }

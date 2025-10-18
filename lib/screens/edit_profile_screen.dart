@@ -238,7 +238,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   center: const Alignment(-0.5, -0.7),
                   radius: 1.2,
                   colors: [
-                    AppColors.accentColor.withOpacity(0.4),
+                    AppColors.accentColor.withValues(alpha:0.4),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.8],
@@ -261,7 +261,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   center: const Alignment(0.5, 0.7),
                   radius: 1.2,
                   colors: [
-                    AppColors.hotPink.withOpacity(0.5),
+                    AppColors.hotPink.withValues(alpha:0.5),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.8],
@@ -319,10 +319,10 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.2),
               ),
             ),
             child: Form(
@@ -461,7 +461,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withValues(alpha:0.2),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -558,7 +558,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              color: Theme.of(context).colorScheme.surface.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha:0.1),
               child: SafeArea(
                 child: Wrap(
                   children: AppLocalizations.supportedLocales.map((locale) {

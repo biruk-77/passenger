@@ -143,7 +143,7 @@ class _AvailableContractsScreenState extends State<AvailableContractsScreen>
             child: Text(
               l10n.noContractsAvailableMessage,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -176,7 +176,7 @@ class _AvailableContractsScreenState extends State<AvailableContractsScreen>
             child: Text(
               l10n.failedToLoadContractsMessage,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -207,7 +207,7 @@ class _AvailableContractsScreenState extends State<AvailableContractsScreen>
               ),
               radius: 1.5,
               colors: [
-                theme.colorScheme.secondary.withOpacity(0.7),
+                theme.colorScheme.secondary.withValues(alpha: 0.7),
                 theme.scaffoldBackgroundColor,
               ],
               stops: const [0.0, 1.0],
@@ -236,8 +236,8 @@ class _AvailableContractsScreenState extends State<AvailableContractsScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.secondary.withOpacity(0.2),
+                  theme.colorScheme.primary.withValues(alpha: 0.3),
+                  theme.colorScheme.secondary.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -280,10 +280,12 @@ class _ContractCard extends StatelessWidget {
     }
 
     return Card(
-      color: theme.colorScheme.surface.withOpacity(0.8),
+      color: theme.colorScheme.surface.withValues(alpha: 0.8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.2)),
+        side: BorderSide(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+        ),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -326,7 +328,7 @@ class _ContractCard extends StatelessWidget {
               Text(
                 contract.description!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

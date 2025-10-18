@@ -8,7 +8,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
-import '../../models/location.dart';
 import '../../providers/saved_places_provider.dart';
 import '../../models/search_result.dart';
 import '../../services/google_maps_service.dart';
@@ -161,6 +160,10 @@ class _SearchPanelState extends State<SearchPanel>
   }
 
   void _selectPlace(PlaceDetails place) {
+    debugPrint("🔍 [SEARCH PANEL] Place selected: ${place.primaryText}");
+    debugPrint("🔍 [SEARCH PANEL] Field: $_activeField");
+    debugPrint("🔍 [SEARCH PANEL] Coordinates: ${place.coordinates}");
+
     setState(() {
       if (_activeField == 'start') {
         _selectedStart = place;
@@ -182,20 +185,37 @@ class _SearchPanelState extends State<SearchPanel>
     }
   }
 
-  // ✅ REPLACE THE ENTIRE METHOD WITH THIS
   Future<void> _onPredictionTapped(Map<String, dynamic> prediction) async {
     FocusScope.of(context).unfocus(); // Hide keyboard
     final placeId = prediction['place_id'];
     if (placeId == null) return;
+
+    debugPrint(
+      "🔍 [SEARCH PANEL] Prediction tapped: ${prediction['description']}",
+    );
+    debugPrint(
+      "🔍 [SEARCH PANEL] Main text: ${prediction['structured_formatting']?['main_text']}",
+    );
+    debugPrint(
+      "🔍 [SEARCH PANEL] Secondary text: ${prediction['structured_formatting']?['secondary_text']}",
+    );
 
     try {
       final placeDetails = await _mapsService.getPlaceDetails(placeId);
       if (!mounted || placeDetails == null) return;
       _mapsService.startSession(); // Start a new session for the next search
 
+      debugPrint(
+        "🔍 [SEARCH PANEL] Place details formatted_address: ${placeDetails['formatted_address']}",
+      );
+      debugPrint(
+        "🔍 [SEARCH PANEL] Place details name: ${placeDetails['name']}",
+      );
+
       final location = placeDetails['geometry']?['location'];
       if (location != null) {
         // THIS IS THE KEY: We prioritize the text from the prediction list.
+        // ✅ FIX: Preserve the exact search term from the prediction, not the formatted address
         final selectedPlace = PlaceDetails(
           placeId: placeId,
           primaryText:
@@ -204,8 +224,16 @@ class _SearchPanelState extends State<SearchPanel>
               'Location',
           secondaryText:
               prediction['structured_formatting']?['secondary_text'] ??
-              placeDetails['formatted_address'],
+              prediction['description'] ?? // ✅ Use prediction description, not formatted_address
+              'Location',
           coordinates: LatLng(location['lat'], location['lng']),
+        );
+
+        debugPrint(
+          "🔍 [SEARCH PANEL] Preserving exact search term: ${selectedPlace.primaryText}",
+        );
+        debugPrint(
+          "🔍 [SEARCH PANEL] Secondary text: ${selectedPlace.secondaryText}",
         );
 
         Provider.of<SavedPlacesProvider>(
@@ -326,7 +354,7 @@ class _SearchPanelState extends State<SearchPanel>
                       ? "Choose your daily pickup and drop-off"
                       : l10n.whereWouldYouLikeToGo,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
@@ -349,14 +377,14 @@ class _SearchPanelState extends State<SearchPanel>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.12),
-            Colors.white.withOpacity(0.06),
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.06),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -392,7 +420,7 @@ class _SearchPanelState extends State<SearchPanel>
     return IconButton(
       icon: Icon(
         Icons.push_pin_outlined,
-        color: Colors.white.withOpacity(0.6),
+        color: Colors.white.withValues(alpha: 0.6),
         size: 20,
       ),
       onPressed: () {
@@ -410,7 +438,7 @@ class _SearchPanelState extends State<SearchPanel>
       Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.goldenrod.withOpacity(0.2),
+          color: AppColors.goldenrod.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -426,8 +454,8 @@ class _SearchPanelState extends State<SearchPanel>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.3),
-              Colors.white.withOpacity(0.1),
+              Colors.white.withValues(alpha: 0.3),
+              Colors.white.withValues(alpha: 0.1),
               Colors.transparent,
             ],
             begin: Alignment.topCenter,
@@ -438,7 +466,7 @@ class _SearchPanelState extends State<SearchPanel>
       Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.hotPink.withOpacity(0.2),
+          color: AppColors.hotPink.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -460,9 +488,9 @@ class _SearchPanelState extends State<SearchPanel>
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: const Icon(
               Icons.swap_vert_rounded,
@@ -579,7 +607,7 @@ class _SearchPanelState extends State<SearchPanel>
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 8,
-          shadowColor: AppColors.goldenrod.withOpacity(0.5),
+          shadowColor: AppColors.goldenrod.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -629,14 +657,14 @@ class _SearchPanelState extends State<SearchPanel>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.12),
-                Colors.white.withOpacity(0.06),
+                Colors.white.withValues(alpha: 0.12),
+                Colors.white.withValues(alpha: 0.06),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
           ),
           child: Column(
             children: [
@@ -667,7 +695,7 @@ class _SearchPanelState extends State<SearchPanel>
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Colors.white.withOpacity(0.1),
+                      Colors.white.withValues(alpha: 0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -703,9 +731,9 @@ class _SearchPanelState extends State<SearchPanel>
   Widget _buildTabBarSection(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -802,7 +830,7 @@ class _SearchPanelState extends State<SearchPanel>
                   Text(
                     l10n.recentTripsCount(placesProvider.recentPlaces.length),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -892,7 +920,7 @@ class _SearchPanelState extends State<SearchPanel>
           Text(
             l10n.searching,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),
@@ -918,7 +946,7 @@ class _SearchPanelState extends State<SearchPanel>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.goldenrod.withOpacity(0.2),
+                  color: AppColors.goldenrod.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -947,7 +975,7 @@ class _SearchPanelState extends State<SearchPanel>
                       Text(
                         secondaryText,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14,
                         ),
                         maxLines: 1,
@@ -969,49 +997,7 @@ class _SearchPanelState extends State<SearchPanel>
     );
   }
 
-  Widget _buildEmptyState({
-    required IconData icon,
-    required String title,
-    required String message,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white.withOpacity(0.4), size: 40),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPlaceMenu(BuildContext context, String type, [SavedPlace? place]) {
+   void _showPlaceMenu(BuildContext context, String type, [SavedPlace? place]) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
@@ -1113,9 +1099,9 @@ class _PremiumBackButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: const Icon(
           Icons.arrow_back_ios_new_rounded,
@@ -1147,9 +1133,9 @@ class _QuickActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Column(
           children: [
@@ -1158,7 +1144,7 @@ class _QuickActionButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -1208,7 +1194,10 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [color.withOpacity(0.3), color.withOpacity(0.1)],
+                    colors: [
+                      color.withValues(alpha: 0.3),
+                      color.withValues(alpha: 0.1),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1226,7 +1215,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                       style: TextStyle(
                         color: isSet
                             ? Colors.white
-                            : Colors.white.withOpacity(0.8),
+                            : Colors.white.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -1237,7 +1226,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 13,
                         fontStyle: isSet ? FontStyle.normal : FontStyle.italic,
                       ),
@@ -1250,7 +1239,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
               if (onLongPress != null)
                 Icon(
                   Icons.more_vert_rounded,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   size: 20,
                 )
               else if (isSet == false)
@@ -1260,7 +1249,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1314,7 +1303,7 @@ class _PremiumPlaceTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: iconColor ?? Colors.white70, size: 20),
@@ -1339,7 +1328,7 @@ class _PremiumPlaceTile extends StatelessWidget {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 13,
                         ),
                         maxLines: 1,
@@ -1353,7 +1342,7 @@ class _PremiumPlaceTile extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.more_vert_rounded,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     size: 20,
                   ),
                   onPressed: onLongPress,
@@ -1361,7 +1350,7 @@ class _PremiumPlaceTile extends StatelessWidget {
               else
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   size: 20,
                 ),
             ],
@@ -1395,10 +1384,14 @@ class _PremiumEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.white.withOpacity(0.4), size: 40),
+            child: Icon(
+              icon,
+              color: Colors.white.withValues(alpha: 0.4),
+              size: 40,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -1414,7 +1407,7 @@ class _PremiumEmptyState extends StatelessWidget {
           Text(
             message,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14,
             ),
             textAlign: TextAlign.center,
@@ -1439,12 +1432,12 @@ class _AddButton extends StatelessWidget {
       icon: const Icon(Icons.add, size: 18),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.goldenrod.withOpacity(0.2),
+        backgroundColor: AppColors.goldenrod.withValues(alpha: 0.2),
         foregroundColor: AppColors.goldenrod,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppColors.goldenrod.withOpacity(0.3)),
+          side: BorderSide(color: AppColors.goldenrod.withValues(alpha: 0.3)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
@@ -1466,10 +1459,10 @@ class _PremiumActionSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2C55),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -1577,7 +1570,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -1597,7 +1590,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
               Text(
                 content,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -1609,7 +1602,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
                     child: TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

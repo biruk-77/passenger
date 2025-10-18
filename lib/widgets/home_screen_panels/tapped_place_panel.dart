@@ -1,11 +1,8 @@
 // lib/widgets/tapped_place_panel.dart
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:flutter_animate/flutter_animate.dart'; // ✅ IMPORT ADDED
 import '../../models/search_result.dart';
-import '../../theme/color.dart';
 
 // ✅ CONVERTED TO STATEFULWIDGET FOR ANIMATIONS
 class TappedPlacePanel extends StatefulWidget {
@@ -75,7 +72,7 @@ class _TappedPlacePanelState extends State<TappedPlacePanel>
             borderRadius: BorderRadius.circular(20.0),
             boxShadow: [
               BoxShadow(
-                color: theme.shadowColor.withOpacity(0.2),
+                color: theme.shadowColor.withValues(alpha: 0.2),
                 blurRadius: 20,
                 spreadRadius: -5,
               ),
@@ -107,7 +104,9 @@ class _TappedPlacePanelState extends State<TappedPlacePanel>
                         IconButton(
                           icon: Icon(
                             Icons.close,
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
                           ), // ✅ THEME-AWARE
                           onPressed: widget.onClear,
                         ),
@@ -120,7 +119,9 @@ class _TappedPlacePanelState extends State<TappedPlacePanel>
                         child: Text(
                           widget.place.secondaryText!,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
                           ), // ✅ THEME-AWARE
                         ),
                       ),
@@ -160,7 +161,7 @@ class _TappedPlacePanelState extends State<TappedPlacePanel>
                 ),
                 radius: 1.5,
                 colors: [
-                  theme.colorScheme.secondary.withOpacity(0.7),
+                  theme.colorScheme.secondary.withValues(alpha: 0.7),
                   theme.colorScheme.surface,
                 ],
                 stops: const [0.0, 1.0],
@@ -191,8 +192,8 @@ class _TappedPlacePanelState extends State<TappedPlacePanel>
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    theme.colorScheme.primary.withOpacity(0.3),
-                    theme.colorScheme.secondary.withOpacity(0.2),
+                    theme.colorScheme.primary.withValues(alpha: 0.3),
+                    theme.colorScheme.secondary.withValues(alpha: 0.2),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.4, 1.0],

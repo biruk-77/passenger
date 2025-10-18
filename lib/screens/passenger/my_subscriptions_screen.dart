@@ -360,7 +360,7 @@ class _StatusTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -427,7 +427,7 @@ class _ContractCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -453,7 +453,9 @@ class _ContractCard extends StatelessWidget {
                         Text(
                           contract.description!,
                           style: AppTextStyles.cardSubtitle.copyWith(
-                            color: AppColors.textSecondary.withOpacity(0.8),
+                            color: AppColors.textSecondary.withValues(
+                              alpha: 0.8,
+                            ),
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -573,7 +575,7 @@ class _FeatureChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.secondaryColor.withOpacity(0.7),
+        color: AppColors.secondaryColor.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -594,6 +596,7 @@ class _FeatureChip extends StatelessWidget {
     );
   }
 }
+
 class _MySubscriptionCard extends StatelessWidget {
   final Subscription subscription;
   const _MySubscriptionCard({required this.subscription});
@@ -608,10 +611,10 @@ class _MySubscriptionCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accentColor.withOpacity(0.3)),
+        border: Border.all(color: AppColors.accentColor.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentColor.withOpacity(0.1),
+            color: AppColors.accentColor.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: -5,
           ),
@@ -622,7 +625,7 @@ class _MySubscriptionCard extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
           child: Material(
-            color: AppColors.primaryColor.withOpacity(0.5),
+            color: AppColors.primaryColor.withValues(alpha: 0.5),
             child: InkWell(
               onTap: () {
                 Navigator.of(context).push(

@@ -262,8 +262,8 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -290,7 +290,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 const Color.fromARGB(255, 6, 9, 16),
               ],
               stops: const [0.0, 1.0],
@@ -371,9 +371,11 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.cardBackground.withOpacity(0.5),
+              color: AppColors.cardBackground.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.borderColor.withOpacity(0.5)),
+              border: Border.all(
+                color: AppColors.borderColor.withValues(alpha: 0.5),
+              ),
             ),
             child: Form(
               key: _formKey,
@@ -412,7 +414,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
   Widget _buildLoginMethodSwitcher(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.7),
+        color: AppColors.background.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
@@ -553,8 +555,25 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             onPressed: () =>
                 setState(() => _isPasswordObscured = !_isPasswordObscured),
           ),
-          validator: (v) =>
-              v == null || v.isEmpty ? l10n.errorEnterPassword : null,
+          validator: (v) {
+            if (v == null || v.isEmpty) return l10n.errorEnterPassword;
+            if (v.length < 6) return l10n.registerErrorPasswordShort;
+
+            final passwordRegex = RegExp(
+              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^()_\-]).{6,}$',
+            );
+
+            if (!passwordRegex.hasMatch(v)) {
+              return l10n.errorEnterregex; // Add this to your l10n
+            }
+
+            if (!passwordRegex.hasMatch(v)) {
+              return l10n
+                  .errorEnterPassword; // Make sure to add this in your l10n file
+            }
+
+            return null; // Valid password
+          },
         ),
       ],
     );
@@ -644,7 +663,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              color: AppColors.cardBackground.withOpacity(0.8),
+              color: AppColors.cardBackground.withValues(alpha: 0.8),
               child: SafeArea(
                 child: Wrap(
                   children: AppLocalizations.supportedLocales.map((locale) {

@@ -262,7 +262,7 @@ class _HistoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF232323),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -289,7 +289,7 @@ class _HistoryCard extends StatelessWidget {
                   Text(
                     time,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -318,7 +318,9 @@ class _HistoryCard extends StatelessWidget {
               _RideMapPreview(item: item, onTap: () => _onTapDetails(context)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(color: Colors.black.withOpacity(0.2)),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.2),
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -385,7 +387,7 @@ class _RideMapPreview extends StatelessWidget {
     final vehicle = VehicleType.fromName(item.vehicleType);
 
     // Generate the static map URL
-   final mapUrl = mapsService.getStaticMapUrlWithRoute( 
+    final mapUrl = mapsService.getStaticMapUrlWithRoute(
       pickup: pickupCoords,
       dropoff: dropoffCoords,
     );
@@ -424,7 +426,7 @@ class _RideMapPreview extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 30,
                       spreadRadius: 10,
                     ),
@@ -455,8 +457,8 @@ class _RideMapPreview extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.9),
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.9),
                   ],
                   stops: const [0.5, 0.7, 1.0],
                 ),
@@ -547,7 +549,7 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           child: Icon(icon, color: Colors.white, size: 20),
         ),
@@ -704,9 +706,9 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: chipColor.withOpacity(0.15),
+        color: chipColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: chipColor.withOpacity(0.5)),
+        border: Border.all(color: chipColor.withValues(alpha: 0.5)),
       ),
       child: Text(
         displayText,

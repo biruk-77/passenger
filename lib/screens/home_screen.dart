@@ -115,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   PlaceDetails? _startPlace;
   PlaceDetails? _endPlace;
   String _fieldBeingSet = 'start';
+  String? _currentMapStyle = lightMapStyle;
   List<Contract> _availableContracts = [];
   bool _isLoadingContracts = false;
   String? _contractsError;
@@ -126,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String _estimatedTime = "";
   String _estimatedDistance = "";
   static const MethodChannel _smsChannel = MethodChannel(
-    'com.example.pasenger/sms',
+    'com.dailytransport.pasenger/sms',
   );
   int _selectedRideOptionIndex = 0;
   List<VehicleType> _vehicleTypes = [];
@@ -479,8 +480,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 );
               }
             });
-            _updateLocalEta(update.position);
-            _updateEtaToDestination(update.position);
+
             _checkDriverProximity(update.position);
           } catch (e, st) {
             Logger.error(
@@ -579,15 +579,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _etaSubscription = _socketService.etaUpdateStream.listen(
       (update) {
         if (!mounted || update.bookingId != _currentBookingId) return;
+
         setState(() {
-          _etaToPickup = "${update.etaMinutes} min";
+          // ✅ FIX: This now works perfectly because the model is correct.
+          // We are displaying the exact "8 m mins" string from the server.
+          _etaToPickup = update.etaText;
         });
+
         Logger.info(
           "HomeScreen",
-          "ETA updated to ${update.etaMinutes} min for booking ${update.bookingId}",
+          "ETA updated to '${update.etaText}' for booking ${update.bookingId}",
         );
       },
       onError: (error) {
+        // Log the error to see if parsing fails for any reason
+        Logger.error("HomeScreen", "Error in ETA stream subscription", error);
         if (mounted) _showErrorSnackBar("Error receiving ETA updates.");
       },
     );
@@ -804,33 +810,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           'An unexpected error occurred while sending the SMS.',
         );
       }
-    }
-  }
-
-  Future<void> _updateEtaToDestination(LatLng driverPosition) async {
-    // Guard clause: Only calculate if we're in an ongoing trip and have a destination.
-    if (!mounted ||
-        _destinationPoint == null ||
-        _currentMapState != MapState.ongoingTrip) {
-      return;
-    }
-
-    try {
-      final RouteDetails? routeDetails = await _googleMapsService
-          .getDirectionsInfo(driverPosition, _destinationPoint!);
-
-      if (routeDetails != null && mounted) {
-        // Update the UI with the new remaining time.
-        setState(() {
-          _etaToDestination = routeDetails.durationText;
-        });
-      }
-    } catch (e) {
-      // Log the error but don't spam the user with snackbars on frequent updates.
-      Logger.warning(
-        "HomeScreen",
-        "Failed to calculate live ETA to destination",
-      );
     }
   }
 
@@ -1107,6 +1086,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ✅ --- UPDATE THE onPlaceSelectedFromSearch FUNCTION ---
   // This function is called when the user selects a location from the SearchPanel.
   void _onPlaceSelectedFromSearch(PlaceDetails place, String field) {
+    debugPrint(
+      "🏠 [HOME SCREEN] Place selected from search: ${place.primaryText}",
+    );
+    debugPrint("🏠 [HOME SCREEN] Field: $field");
+    debugPrint("🏠 [HOME SCREEN] Coordinates: ${place.coordinates}");
     // --- NEW LOGIC FOR CONTRACT CREATION ---
     // If we are in the middle of creating a contract, handle it here.
     if (_selectedContractForCreation != null) {
@@ -1322,6 +1306,60 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  void _showMapTypeSelector() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // For checking the current style, we'll store it as a simple string.
+        // We can't ask the controller for its current style, so we manage it ourselves.
+        // Let's assume the default is the dark mapStyle.
+        // We need to manage a state variable for the current style to make the check mark work.
+
+        // We'll pass the style string directly to the tile builder.
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2a3a4a),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            l10n.mapLayersTitle,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildMapTypeTile(
+                l10n.mapLayersDark,
+                Icons.dark_mode,
+                MapType.normal,
+                mapStyle,
+              ),
+              const Divider(color: Colors.white24, height: 1),
+              // ✅ THE FIX IS HERE: We pass the imported constant 'lightMapStyle' directly.
+              _buildMapTypeTile(
+                l10n.mapLayersLight,
+                Icons.light_mode,
+                MapType.normal,
+                lightMapStyle,
+              ),
+              const Divider(color: Colors.white24, height: 1),
+              _buildMapTypeTile(
+                l10n.mapLayersSatellite,
+                Icons.satellite_alt,
+                MapType.hybrid,
+                null,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _handleBookingStatusUpdate(BookingStatusUpdate update) {
     if (!mounted) return;
     final status = update.status.toLowerCase();
@@ -1333,7 +1371,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (status == 'completed') {
       try {
         // 🎉 Show success feedback to user
-
+        _notificationService.cancelRideNotification();
         setState(() {
           // 1. Change the UI state to show the rating panel
           _currentMapState = MapState.postTripRating;
@@ -1341,7 +1379,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           // 2. Store the final trip data from the event payload
           _finalFare = update.fareFinal;
-          _finalDistanceKm = update.distanceKm;
+          _finalDistanceKm = update.distanceTraveled;
 
           // 3. Clean up the map for the summary view
           _polylines.clear(); // 🗑️ Clean up the map route safely
@@ -1424,37 +1462,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } else if (status == 'canceled' || status == 'rejected') {
       _showErrorSnackBar('Your booking was cancelled.');
       _resetMapState();
-    }
-  }
-
-  Future<void> _updateLocalEta(LatLng driverPosition) async {
-    // Guard clause: Only calculate if we have a pickup point and are in the correct state.
-    if (_startPoint == null || _currentMapState != MapState.driverOnTheWay) {
-      debugPrint(
-        "_startPoint $_startPoint, _currentMapState $_currentMapState",
-      );
-      debugPrint("😒😒😒😒😒Skipping local ETA update");
-      return;
-    }
-
-    try {
-      // Get the full route details from the driver to the passenger.
-      final RouteDetails? routeDetails = await _googleMapsService
-          .getDirectionsInfo(driverPosition, _startPoint!);
-
-      if (routeDetails != null && mounted) {
-        // Update the UI with the duration text from the route details (e.g., "5 min").
-        setState(() {
-          _etaToPickup = routeDetails.durationText;
-        });
-        Logger.info(
-          "HomeScreen",
-          "Local ETA updated: ${routeDetails.durationText}",
-        );
-      }
-    } catch (e) {
-      // We log the error but don't show a snackbar to avoid spamming the user on frequent location updates.
-      Logger.warning("HomeScreen", "Failed to calculate local ETA");
     }
   }
 
@@ -1591,13 +1598,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       try {
         debugPrint(" 🔄 Fetching high-quality address for current location...");
         // Get the current map zoom to help the service find the best address.
-        final GoogleMapController controller = await _mapController.future;
-        final zoom = await controller.getZoomLevel();
+        // final GoogleMapController controller = await _mapController.future;
+        // final zoom = await controller.getZoomLevel();
 
         final PlaceAddress place = await _googleMapsService
             .getAddressFromCoordinates(
               _startPoint!,
-              currentZoomLevel: zoom,
+              currentZoomLevel: 20,
               useNearbySearch: true, // ✅ Use nearby search for current location
             );
 
@@ -2258,42 +2265,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // Helper to get the map route
-  Future<void> _getPolylineAndRouteInfo(LatLng start, LatLng end) async {
-    try {
-      final RouteDetails? routeDetails = await _googleMapsService
-          .getDirectionsInfo(start, end);
-
-      if (routeDetails != null && mounted) {
-        setState(() {
-          _polylines.clear();
-          _polylines.add(
-            Polyline(
-              polylineId: const PolylineId('route'),
-              points: routeDetails.points,
-              color: const Color.fromARGB(255, 2, 39, 248),
-              width: 6,
-            ),
-          );
-          _estimatedDistance = routeDetails.distanceText;
-          _estimatedTime = routeDetails.durationText;
-        });
-
-        await _getAddressesFromCoordinates();
-      } else {
-        throw Exception("Failed to get route details from Google.");
-      }
-    } catch (e) {
-      if (mounted) {
-        _showErrorSnackBar("Could not get route details from Google Maps.");
-        setState(() {
-          _estimatedDistance = "N/A";
-          _estimatedTime = "N/A";
-        });
-      }
-    }
-  }
-
   // In lib/screens/home_screen.dart
   Future<void> _handleMapTapForSaving(LatLng position) async {
     setState(() {
@@ -2383,20 +2354,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  // --- Find and REPLACE this entire method ---
   Future<void> _planOrUpdateRoute(
     LatLng destination, {
     LatLng? start,
-    String? destinationName, // Optional: for results from search screen
-    String? startName, // Optional: for results from search screen
+    String?
+    destinationName, // This will have a value from search, but be null for map taps
+    String? startName, // This will have a value from search
     double currentZoom = 16.0,
   }) async {
     _nearbyDriverSimulatorManager?.stop();
     debugPrint("--- 🗺️ _planOrUpdateRoute Activated ---");
-    debugPrint("Destination Coords: $destination");
-    debugPrint("Initial Destination Name: $destinationName");
-    debugPrint("Initial Start Name: $startName");
-    debugPrint("Initial Start Coords: $start");
 
     // --- Step 1: Immediately update UI to feel responsive ---
     setState(() {
@@ -2406,76 +2373,112 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _destinationPoint = destination;
       _polylines.clear(); // Clear old routes
 
-      // Use the best available name for now. We will refine it.
-      _startAddress =
-          startName ??
-          _startAddress; // Keep 'Current Location' or use name from search
+      // Use the best name available right now. We will confirm/fetch below.
+      _startAddress = startName ?? _startAddress;
       _destinationAddress = destinationName ?? "Loading Address...";
-      print("destinaito before 😊😊😊: $_destinationAddress");
+
       if (start != null) {
-        debugPrint("New Start Coords: $start");
         _startPoint = start;
       }
     });
 
     _updateMarkers(); // Show the new pins on the map immediately
 
-    // --- 🧠 Step 2: Intelligently get the BEST address for the DESTINATION ---
-    try {
-      debugPrint(" 🔄 Fetching high-quality destination address...");
-      // Force a high-quality lookup for the destination point.
-      final PlaceAddress destPlace = await _googleMapsService
-          .getAddressFromCoordinates(
-            destination,
-            currentZoomLevel: currentZoom,
-            useNearbySearch: true, // ✅ Use nearby search for map taps
-          );
+    // --- ✅ THE CORE FIX IS HERE: Intelligently determine the final addresses ---
+    String finalStartAddress = _startAddress;
+    String finalDestAddress = _destinationAddress;
 
-      // If the start point is the user's current location, fetch its name too.
-      String resolvedStartAddress = _startAddress;
-      debugPrint(" 🔄 Fetching high-quality start address...");
-      if (_startPoint != null) {
-        debugPrint(
-          " 🔄 Fetching high-quality start address (was 'Current Location')...",
+    // If a specific destinationName was passed from the search panel, USE IT.
+    if (destinationName != null) {
+      debugPrint(
+        "✅ Using EXACT destination name from search: '$destinationName'",
+      );
+      finalDestAddress = destinationName;
+    } else {
+      // Otherwise, this was a map tap, so we MUST fetch the address from coordinates.
+      debugPrint("🔄 Fetching destination name for map tap...");
+      try {
+        final destPlace = await _googleMapsService.getAddressFromCoordinates(
+          destination,
+          currentZoomLevel: currentZoom,
+          useNearbySearch: true, // Good for map taps
         );
-        try {
-          final PlaceAddress startPlace = await _googleMapsService
-              .getAddressFromCoordinates(
-                _startPoint!,
-                currentZoomLevel:
-                    currentZoom, // Use a standard zoom for current location
-                useNearbySearch: true, // ✅ Use nearby search for map taps
-              );
-          resolvedStartAddress = startPlace.name;
-          print("resolvedStartAddress: $resolvedStartAddress");
-        } catch (e) {
-          // If it fails, just keep "Current Location" as a fallback
-          resolvedStartAddress = "Current Location";
-        }
-      }
-
-      if (mounted) {
-        // Update the UI with the final, high-quality names
-        setState(() {
-          _destinationAddress = destPlace.name;
-          _startAddress = resolvedStartAddress;
-        });
-        debugPrint(
-          " ✅ Addresses resolved: '$_startAddress' -> '$_destinationAddress'",
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        _showErrorSnackBar("Could not get a specific name for the location.");
-        setState(() {
-          _destinationAddress = "Selected Destination"; // A clean fallback
-        });
+        finalDestAddress = destPlace.name;
+      } catch (e) {
+        finalDestAddress = "Selected Location"; // Fallback for map tap
       }
     }
 
-    // --- Step 3: With addresses and points set, get the route and fares ---
+    // If a specific startName was passed from the search panel, USE IT.
+    if (startName != null) {
+      debugPrint("✅ Using EXACT start name from search: '$startName'");
+      finalStartAddress = startName;
+    } else if (_startPoint != null) {
+      // If no start name was given, it's likely the user's current location.
+      // Let's get a proper name for it instead of just "Current Location".
+      debugPrint("🔄 Fetching name for current start location...");
+      try {
+        final startPlace = await _googleMapsService.getAddressFromCoordinates(
+          _startPoint!,
+          currentZoomLevel: currentZoom,
+          useNearbySearch: true,
+        );
+        finalStartAddress = startPlace.name;
+      } catch (e) {
+        finalStartAddress = "Current Location"; // Fallback
+      }
+    }
+
+    // --- Step 2: Update the UI with the final, correct names ---
+    if (mounted) {
+      setState(() {
+        _startAddress = finalStartAddress;
+        _destinationAddress = finalDestAddress;
+      });
+      debugPrint(
+        "✅ Final addresses confirmed: '$_startAddress' -> '$_destinationAddress'",
+      );
+    }
+
+    // --- Step 3: With correct addresses set, get the route and fares ---
     if (mounted) {
       await _getDirectionsAndFares();
+    }
+  }
+
+  Future<void> _getPolylineAndRouteInfo(LatLng start, LatLng end) async {
+    try {
+      final RouteDetails? routeDetails = await _googleMapsService
+          .getDirectionsInfo(start, end);
+
+      if (routeDetails != null && mounted) {
+        setState(() {
+          _polylines.clear();
+          _polylines.add(
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: routeDetails.points,
+              color: const Color.fromARGB(255, 2, 39, 248),
+              width: 6,
+            ),
+          );
+          _estimatedDistance = routeDetails.distanceText;
+          _estimatedTime = routeDetails.durationText;
+        });
+
+        // ✨ THE CORE FIX: REMOVE THE UNNECESSARY ADDRESS LOOKUP
+        // await _getAddressesFromCoordinates(); // <--- DELETE OR COMMENT OUT THIS LINE
+      } else {
+        throw Exception("Failed to get route details from Google.");
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackBar("Could not get route details from Google Maps.");
+        setState(() {
+          _estimatedDistance = "N/A";
+          _estimatedTime = "N/A";
+        });
+      }
     }
   }
 
@@ -3352,19 +3355,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 zoom: 12,
               ),
               onMapCreated: (GoogleMapController controller) {
-                print("ðŸ—ºï¸  Google Map Created and is ready.");
+                print("🗺️ Google Map Created and is ready.");
                 if (!_mapController.isCompleted) {
-                  // Make the controller available for other methods like _goToCurrentUserLocation
                   _mapController.complete(controller);
                 }
                 try {
-                  controller.setMapStyle(mapStyle);
+                  // ✅ THIS NOW USES YOUR NEW DEFAULT a
+                  if (_currentMapStyle != null) {
+                    controller.setMapStyle(_currentMapStyle);
+                  }
                 } catch (e) {
-                  print("   L-- ðŸš¨ Error setting map style: $e");
+                  print("   L-- 🚨 Error setting map style: $e");
                 }
-                // All location-dependent logic (camera animation, driver fetching)
-                // has been moved to _goToCurrentUserLocation to ensure the map is
-                // ready and location is available.
               },
               polylines: _polylines,
               circles: _buildSearchCircle(),
@@ -3448,13 +3450,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             MapOverlayButtons(
               onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
               onGpsTap: _goToCurrentUserLocation,
-              onLayersTap: () => setState(() {
-                _nearbyDriverSimulatorManager?.stop();
-                _currentMapType = _currentMapType == MapType.normal
-                    ? MapType.hybrid
-                    : MapType.normal;
-                _nearbyDriverSimulatorManager?.stop();
-              }),
+              onLayersTap: _showMapTypeSelector,
               // --- âœ… THIS IS THE FIX for the cancel button ---
               showCancel:
                   _isPanelVisible ||
@@ -3686,10 +3682,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           vertical: 14,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.5),
+                          color: AppColors.primaryColor.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Row(
@@ -3697,7 +3693,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           children: [
                             Icon(
                               Icons.touch_app_rounded,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                             ),
                             const SizedBox(width: 12),
                             Text(
@@ -3792,7 +3788,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(100),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
+                            color: Colors.black.withValues(alpha: 0.25),
                             blurRadius: 2,
                             offset: const Offset(0, 2),
                           ),
@@ -3983,6 +3979,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildMapTypeTile(
+    String title,
+    IconData icon,
+    MapType mapType,
+    String? style,
+  ) {
+    // Determine if this tile is the currently selected one.
+    bool isSelected = false;
+    if (mapType == MapType.hybrid && _currentMapType == MapType.hybrid) {
+      // This is the satellite view.
+      isSelected = true;
+    } else if (mapType == MapType.normal && _currentMapType == MapType.normal) {
+      // This is a normal view (light or dark). Check our state variable.
+      isSelected = (_currentMapStyle == style);
+    }
+
+    return ListTile(
+      leading: Icon(icon, color: AppColors.goldenrod),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, color: Colors.greenAccent)
+          : null,
+      onTap: () async {
+        Navigator.of(context).pop(); // Close the dialog
+        final controller = await _mapController.future;
+
+        setState(() {
+          _currentMapType = mapType;
+          _currentMapStyle =
+              style; // Update our state variable with the new style
+        });
+
+        // Apply the style. `null` is passed for satellite view, which clears any custom style.
+        await controller.setMapStyle(style);
+      },
+    );
+  }
+
   Set<Circle> _buildSearchCircle() {
     final circles = <Circle>{};
 
@@ -4007,7 +4041,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         center: _startPoint!,
         radius: radiusInMeters,
         // Use a semi-transparent fill color to see the map underneath
-        fillColor: circleColor.withOpacity(0.2),
+        fillColor: circleColor.withValues(alpha: 0.2),
         // Set strokeWidth to 0 for no border
         strokeWidth: 0,
       ),
@@ -4017,8 +4051,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 } // This is the closing brace for the _HomeScreenState class
 
-// i// Place this class inside your lib/screens/home_screen.dart file
-// Place this class inside your lib/screens/home_screen.dart file
+
 
 // âœ… Make sure this typedef is defined above the class
 typedef OnEnterPickingMode = void Function(MapPickingMode mode);
@@ -4399,7 +4432,7 @@ class CircularButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1), // Softer shadow
+              color: Colors.black.withValues(alpha: 0.1), // Softer shadow
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -4544,7 +4577,7 @@ class _ChatViewState extends State<_ChatView> {
                       hintText: "Type a message...",
                       hintStyle: const TextStyle(color: Colors.white54),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
+                      fillColor: Colors.white.withValues(alpha: 0.1),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
                         borderSide: BorderSide.none,
@@ -4564,7 +4597,7 @@ class _ChatViewState extends State<_ChatView> {
                   ),
                   onPressed: _handleSend,
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     padding: const EdgeInsets.all(14),
                   ),
                 ),
@@ -4592,8 +4625,8 @@ class _ChatMessageBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isMe
-              ? AppColors.goldenrod.withOpacity(0.9)
-              : Colors.white.withOpacity(0.15),
+              ? AppColors.goldenrod.withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),

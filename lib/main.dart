@@ -277,9 +277,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
               return const CompleteProfileScreen();
             case AuthStatus.unauthenticated:
             case AuthStatus.unknown:
-            default:
               return const PassengerLoginScreen();
+        
           }
+
         }
 
         // As a fallback, show the login screen.

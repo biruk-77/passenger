@@ -225,11 +225,11 @@ class _KineticDrawerContentState extends State<_KineticDrawerContent>
               child: Container(
                 decoration: BoxDecoration(
                   color: theme.brightness == Brightness.dark
-                      ? AppColors.primaryColor.withOpacity(0.2)
-                      : Colors.white.withOpacity(0.2),
+                      ? AppColors.primaryColor.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.2),
                   border: Border(
                     right: BorderSide(
-                      color: theme.colorScheme.primary.withOpacity(0.3),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -277,7 +277,7 @@ class _KineticDrawerContentState extends State<_KineticDrawerContent>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 Theme.of(context).scaffoldBackgroundColor,
               ],
               stops: const [0.0, 1.0],
@@ -306,8 +306,8 @@ class _KineticDrawerContentState extends State<_KineticDrawerContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -358,12 +358,12 @@ class _KineticDrawerHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.6),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.6),
                         blurRadius: 30.0,
                         spreadRadius: 0,
                       ),
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         blurRadius: 20.0,
                         spreadRadius: -5,
                       ),
@@ -408,7 +408,7 @@ class _KineticDrawerHeader extends StatelessWidget {
                     userEmail,
                     style: TextStyle(
                       fontSize: 14,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -570,7 +570,7 @@ class _KineticDrawerFooter extends StatelessWidget {
       child: Column(
         children: [
           Divider(
-            color: AppColors.borderColor.withOpacity(0.5),
+            color: AppColors.borderColor.withValues(alpha: 0.5),
             height: 1,
             indent: 8,
             endIndent: 8,
@@ -604,20 +604,20 @@ class _KineticDrawerFooter extends StatelessWidget {
               Text(
                 l10n.appVersion(version),
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   fontSize: 12,
                 ),
               ),
               Text(
                 "  •  ",
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               Text(
                 "Crafted by ACME Inc.", // TODO: Add to l10n
                 style: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   fontSize: 12,
                 ),
               ),
@@ -649,7 +649,7 @@ class _DrawerMenuItem extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: textColor ?? theme.colorScheme.onSurface.withOpacity(0.7),
+        color: textColor ?? theme.colorScheme.onSurface.withValues(alpha: 0.7),
         size: 24,
       ),
       title: Text(
@@ -661,7 +661,7 @@ class _DrawerMenuItem extends StatelessWidget {
         ),
       ),
       onTap: onTap,
-      splashColor: theme.colorScheme.primary.withOpacity(0.1),
+      splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
@@ -739,8 +739,8 @@ class _MagneticMenuItemState extends State<_MagneticMenuItem> {
               gradient: _isHovered
                   ? LinearGradient(
                       colors: [
-                        theme.colorScheme.primary.withOpacity(0.1),
-                        theme.colorScheme.primary.withOpacity(0.05),
+                        theme.colorScheme.primary.withValues(alpha: 0.1),
+                        theme.colorScheme.primary.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -748,7 +748,7 @@ class _MagneticMenuItemState extends State<_MagneticMenuItem> {
                   : null,
               border: Border.all(
                 color: _isHovered
-                    ? theme.colorScheme.primary.withOpacity(0.5)
+                    ? theme.colorScheme.primary.withValues(alpha: 0.5)
                     : Colors.transparent,
                 width: 1.0,
               ),
@@ -765,7 +765,7 @@ class _MagneticMenuItemState extends State<_MagneticMenuItem> {
                       widget.icon,
                       color: _isHovered
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface.withOpacity(0.7),
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       size: 24,
                     ),
                   ),
@@ -776,7 +776,7 @@ class _MagneticMenuItemState extends State<_MagneticMenuItem> {
                       fontSize: 16,
                       color: _isHovered
                           ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurface.withOpacity(0.7),
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

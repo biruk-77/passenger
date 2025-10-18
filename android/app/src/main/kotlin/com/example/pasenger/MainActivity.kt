@@ -1,4 +1,4 @@
-package com.example.pasenger
+package com.dailytransport.pasenger
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -11,7 +11,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-  private val channelName = "com.example.pasenger/sms"
+  private val channelName = "com.dailytransport.pasenger/sms"
 
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)

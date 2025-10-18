@@ -343,7 +343,9 @@ class _PlanningPanelContentState extends State<PlanningPanelContent>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Divider(color: AppColors.borderColor.withOpacity(0.5)), // THEMED
+          Divider(
+            color: AppColors.borderColor.withValues(alpha: 0.5),
+          ), // THEMED
           const SizedBox(height: 16),
           Text(
             l10n.contractsSectionTitle,
@@ -359,7 +361,7 @@ class _PlanningPanelContentState extends State<PlanningPanelContent>
             l10n.contractsSectionDescription, // Using new localized string
             style: TextStyle(
               fontFamily: _primaryFont,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),
@@ -396,7 +398,7 @@ class _PlanningPanelContentState extends State<PlanningPanelContent>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -424,8 +426,8 @@ class _PlanningPanelContentState extends State<PlanningPanelContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -490,35 +492,37 @@ class _VehicleCard extends StatelessWidget {
               child: AnimatedContainer(
                 duration: 400.ms,
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground.withOpacity(
-                    isSelected ? 0.6 : 0.3,
+                  color: AppColors.cardBackground.withValues(
+                    alpha: isSelected ? 0.6 : 0.3,
                   ), // THEMED
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.goldenrod.withOpacity(0.8) // THEMED
-                        : AppColors.borderColor.withOpacity(0.5), // THEMED
+                        ? AppColors.goldenrod.withValues(alpha: 0.8) // THEMED
+                        : AppColors.borderColor.withValues(
+                            alpha: 0.5,
+                          ), // THEMED
                     width: isSelected ? 2.0 : 1.0,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.goldenrod.withOpacity(
-                              0.3,
+                            color: AppColors.goldenrod.withValues(
+                              alpha: 0.3,
                             ), // THEMED
                             blurRadius: 20,
                             spreadRadius: 0,
                             offset: const Offset(0, 10),
                           ),
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withValues(alpha: 0.4),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -558,7 +562,7 @@ class _VehicleCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Divider(
-                        color: AppColors.borderColor.withOpacity(0.3),
+                        color: AppColors.borderColor.withValues(alpha: 0.3),
                       ), // THEMED
                     ),
                     Padding(
@@ -709,7 +713,9 @@ class _ConfirmButtonState extends State<ConfirmButton> {
                 ? []
                 : [
                     BoxShadow(
-                      color: AppColors.goldenrod.withOpacity(0.5), // THEMED
+                      color: AppColors.goldenrod.withValues(
+                        alpha: 0.5,
+                      ), // THEMED
                       blurRadius: 20,
                       spreadRadius: -5,
                       offset: const Offset(0, 10),
@@ -780,11 +786,11 @@ class _ContractListTile extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10.0),
-      color: AppColors.cardBackground.withOpacity(0.4), // THEMED
+      color: AppColors.cardBackground.withValues(alpha: 0.4), // THEMED
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: AppColors.borderColor.withOpacity(0.4),
+          color: AppColors.borderColor.withValues(alpha: 0.4),
         ), // THEMED
       ),
       child: ListTile(
@@ -793,7 +799,7 @@ class _ContractListTile extends StatelessWidget {
           Icons.workspace_premium_outlined,
           color: AppColors.goldenrod, // THEMED
         ),
-        title:  Text(
+        title: Text(
           contract.contractType, // Assuming this is placeholder, keeping as is.
           style: TextStyle(
             color: AppColors.textPrimary, // THEMED

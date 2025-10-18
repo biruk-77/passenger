@@ -8,8 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/route_details.dart';
 import '../models/location.dart';
-
 import '../models/search_result.dart';
+
 // --- Custom Data Models for Richer Information ---
 
 // --- Custom Exceptions for Granular Error Handling ---
@@ -51,45 +51,81 @@ class GoogleMapsService {
     debugPrint("✅ GoogleMapsService Initialized: The Ultimate Edition");
   }
 
-  /// --- 🧠 THE ULTIMATE ADDRESS LOOKUP ---
+  /// --- 🧠 THE ULTIMATE ADDRESS LOOKUP (WITH MAXIMUM DEBUGGING) ---
   Future<PlaceAddress> getAddressFromCoordinates(
     LatLng coordinates, {
-    double currentZoomLevel = 16.0, // Default zoom if not provided
-    bool useNearbySearch = false, // ✅ DISABLED by default to preserve user's exact search
+    double currentZoomLevel = 20.0, // Default zoom if not provided
+    bool useNearbySearch =
+        false, // This is the key flag that controls the logic path
   }) async {
+    // Use a JsonEncoder for pretty-printing JSON objects in the logs
+    const jsonEncoder = JsonEncoder.withIndent('  ');
+
+    debugPrint("\n\n--- 🚀 DEEP DIVE START: getAddressFromCoordinates ---");
+    debugPrint("  ➡️ Inputs:");
+    debugPrint(
+      "     - Coordinates: ${coordinates.latitude}, ${coordinates.longitude}",
+    );
+    debugPrint("     - Zoom Level: $currentZoomLevel");
+    debugPrint("     - Use Nearby Search Flag: $useNearbySearch");
+
     final cacheKey =
         '${coordinates.latitude.toStringAsFixed(6)},${coordinates.longitude.toStringAsFixed(6)}';
+    debugPrint("  🔑 Generated Cache Key: '$cacheKey'");
 
     try {
-      debugPrint(
-        "🌍 [GEO-LOOKUP] Starting intelligent address search for $coordinates at zoom $currentZoomLevel",
-      );
-
-      // --- STAGE 1: Zoom-Aware Nearby Place Search (OPTIONAL) ---
-      // ✅ This is now DISABLED by default to prevent replacing user's exact search
-      // Only use it when explicitly requested (e.g., map taps, not search results)
+      // --- STAGE 1: Zoom-Aware Nearby Place Search (ONLY for map taps) ---
+      debugPrint("\n  [Stage 1] Checking 'useNearbySearch' flag...");
       if (useNearbySearch) {
+        debugPrint(
+          "  🧠 LOGIC: 'useNearbySearch' is TRUE. This is likely a map tap.",
+        );
+        debugPrint("  ➡️ ACTION: Initiating Stage 1 - Nearby Place Search.");
+
         final nearbyPlace = await _getNearbyPlace(
           coordinates,
           currentZoomLevel: currentZoomLevel,
         );
+
         if (nearbyPlace != null) {
           debugPrint(
-            "✅ [Stage 1] SUCCESS: Found nearby place: ${nearbyPlace.name}",
+            "    ✅ [Stage 1] SUCCESS: Found a high-quality nearby place.",
           );
+          debugPrint(
+            "    📦 Nearby Place Data: ${jsonEncoder.convert(nearbyPlace.toJson())}",
+          );
+          debugPrint("    💾 Caching result for key '$cacheKey'...");
           await _saveToCache(cacheKey, nearbyPlace);
+          debugPrint("    ↩️ RETURNING Stage 1 result. Process complete.");
+          debugPrint("--- ✅ DEEP DIVE END ---\n");
           return nearbyPlace;
+        } else {
+          debugPrint(
+            "    ⚠️ [Stage 1] FAILED: _getNearbyPlace returned null. No specific places found nearby.",
+          );
+          debugPrint(
+            "    ➡️ ACTION: Proceeding to Stage 2 (Reverse Geocoding) as a fallback.",
+          );
         }
-        debugPrint(
-          "⚠️ [Stage 1] No high-quality nearby places found. Proceeding to Stage 2.",
-        );
       } else {
         debugPrint(
-          "ℹ️ [Stage 1] SKIPPED: Using direct geocoding to preserve accuracy.",
+          "  🧠 LOGIC: 'useNearbySearch' is FALSE. This is likely from a search result.",
+        );
+        debugPrint(
+          "  ℹ️ INFO: SKIPPING Stage 1 to preserve the exact location accuracy from the user's search.",
+        );
+        debugPrint(
+          "  ➡️ ACTION: Proceeding directly to Stage 2 (Reverse Geocoding).",
         );
       }
 
       // --- STAGE 2: Precise Reverse Geocoding for Street Address ---
+      debugPrint("\n  [Stage 2] Initiating Reverse Geocoding...");
+      debugPrint("    📡 API CALL: GET /geocode/json");
+      debugPrint(
+        "    - Query Param 'latlng': '${coordinates.latitude},${coordinates.longitude}'",
+      );
+
       final geocodeResponse = await _dio.get(
         '/geocode/json',
         queryParameters: {
@@ -97,41 +133,97 @@ class GoogleMapsService {
         },
       );
 
+      debugPrint("    📥 API RESPONSE Received.");
+      debugPrint("       - HTTP Status Code: ${geocodeResponse.statusCode}");
+      debugPrint(
+        "       - Google API Status: ${geocodeResponse.data?['status']}",
+      );
+      debugPrint(
+        "       - Number of Results: ${geocodeResponse.data?['results']?.length ?? 0}",
+      );
+
       if (_isResponseValid(geocodeResponse, 'results')) {
+        debugPrint(
+          "    ✅ LOGIC: Response is considered VALID. Finding the best result from the list...",
+        );
+
         final Map<String, dynamic>? bestResult = _findBestGeocodingResult(
           geocodeResponse.data['results'],
         );
+
         if (bestResult != null) {
+          debugPrint("      ✅ SUCCESS: Found a suitable 'best result'.");
+          debugPrint(
+            "      📦 Raw Best Result JSON:\n${jsonEncoder.convert(bestResult)}",
+          );
+          debugPrint(
+            "      ➡️ ACTION: Building final PlaceAddress object from this result...",
+          );
+
           final placeAddress = _buildPlaceAddressFromResult(
             bestResult,
             coordinates,
           );
-          debugPrint(
-            "✅ [Stage 2] SUCCESS: Found street address: ${placeAddress.name}",
-          );
-          await _saveToCache(cacheKey, placeAddress);
-          return placeAddress;
-        }
-      }
-      debugPrint("⚠️ [Stage 2] Reverse geocoding returned no usable results.");
 
+          debugPrint(
+            "        ✅ SUCCESS: PlaceAddress object built successfully.",
+          );
+          debugPrint(
+            "        📦 Final PlaceAddress Data: ${jsonEncoder.convert(placeAddress.toJson())}",
+          );
+          debugPrint("        💾 Caching result for key '$cacheKey'...");
+          await _saveToCache(cacheKey, placeAddress);
+          debugPrint("        ↩️ RETURNING Stage 2 result. Process complete.");
+          debugPrint("--- ✅ DEEP DIVE END ---\n");
+          return placeAddress;
+        } else {
+          debugPrint(
+            "      ❌ FAILED: Could not find a suitable result (e.g., all results were 'plus_code').",
+          );
+          // This will fall through to the ZeroResultsException below.
+        }
+      } else {
+        debugPrint(
+          "    ❌ LOGIC: Response is considered INVALID or contains NO results.",
+        );
+        // This will fall through to the ZeroResultsException below.
+      }
+
+      debugPrint(
+        "\n  ❌ ULTIMATE FAILURE: Both stages failed to produce a usable address.",
+      );
       throw GoogleMapsApiZeroResultsException(
         "Could not identify any location after all stages.",
       );
-    } on DioException catch (e) {
-      debugPrint("🔥 DioException during address lookup: ${e.message}");
+    } on DioException catch (e, st) {
+      debugPrint(
+        "\n  🔥 CATCH (DioException): A network-level error occurred!",
+      );
+      debugPrint("    - Error Type: ${e.type}");
+      debugPrint("    - Error Message: ${e.message}");
+      if (e.response != null) {
+        debugPrint("    - Response Data: ${e.response?.data}");
+      }
+      debugPrint("    - Stack Trace: $st");
+      debugPrint("  ➡️ ACTION: Throwing a GoogleMapsApiException.");
+      debugPrint("--- ❌ DEEP DIVE END (ERROR) ---\n");
       throw GoogleMapsApiException(
         'Network error during address lookup.',
         underlyingException: e,
       );
-    } catch (e) {
-      debugPrint("🔥 Unhandled Exception during address lookup: $e");
+    } catch (e, st) {
+      debugPrint("\n  🔥 CATCH (Unexpected): A non-network error occurred!");
+      debugPrint("    - Error Type: ${e.runtimeType}");
+      debugPrint("    - Error Message: $e");
+      debugPrint("    - Stack Trace: $st");
+      debugPrint("  ➡️ ACTION: Re-throwing the original exception.");
+      debugPrint("--- ❌ DEEP DIVE END (ERROR) ---\n");
       rethrow;
     }
   }
 
   /// --- 🗺️ ROUTE & DIRECTIONS ---
-  Future<RouteDetails> getDirectionsInfo(
+  Future<RouteDetails?> getDirectionsInfo(
     LatLng origin,
     LatLng destination,
   ) async {
@@ -164,6 +256,7 @@ class GoogleMapsService {
         "No routes found. Status: ${response.data?['status']}",
       );
     } catch (e) {
+      debugPrint("Error getting directions: $e");
       throw GoogleMapsApiException(
         "Failed to get directions",
         underlyingException: e,
@@ -212,8 +305,6 @@ class GoogleMapsService {
           'input': input,
           'sessiontoken': _sessionToken,
           'components': 'country:ET',
-          // ✅ NO location/radius = pure text search, not "nearby" bias
-          // This ensures we get exactly what the user searches for
         },
       );
       if (_isResponseValid(response, 'predictions')) {
@@ -227,7 +318,7 @@ class GoogleMapsService {
     }
   }
 
-  Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
+  Future<Map<String, dynamic>?> getPlaceDetails(String placeId) async {
     if (_sessionToken == null)
       throw GoogleMapsApiException(
         "Session token is missing for place details.",
@@ -267,24 +358,24 @@ class GoogleMapsService {
     return false;
   }
 
-  // Method with the first correction
   Future<PlaceAddress?> _getNearbyPlace(
     LatLng coordinates, {
     required double currentZoomLevel,
   }) async {
     double radius;
-    if (currentZoomLevel > 18) {
-      radius = 20;
-    } else if (currentZoomLevel > 16) {
-      radius = 50;
-    } else if (currentZoomLevel > 14) {
-      radius = 250;
+
+    if (currentZoomLevel > 19) {
+      radius = 15; // Increased slightly for better chances
+    } else if (currentZoomLevel > 17) {
+      radius = 30;
+    } else if (currentZoomLevel > 15) {
+      radius = 80;
     } else {
-      radius = 1000;
+      radius = 150;
     }
 
     debugPrint(
-      "🧠 Zoom-Aware Search: Zoom is $currentZoomLevel, searching with radius ${radius}m",
+      "🧠 Zoom-Aware Search (STRICT MODE): Zoom is $currentZoomLevel, searching with a tight radius of ${radius}m",
     );
 
     try {
@@ -295,18 +386,49 @@ class GoogleMapsService {
           'radius': radius,
         },
       );
+
       if (_isResponseValid(response, 'results')) {
-        final bestResult = (response.data['results'] as List).firstWhere((
-          place,
-        ) {
-          final types = List<String>.from(place['types'] ?? []);
-          return !types.contains('political') && !types.contains('locality');
-        }, orElse: () => response.data['results'][0]);
+        // --- THE CRITICAL FIX IS HERE ---
+        // We now find the first result that is NOT a generic area type.
+        final List<dynamic> results = response.data['results'];
+        final bestResult = results.firstWhere(
+          (place) {
+            final types = List<String>.from(place['types'] ?? []);
+            // AGGRESSIVELY REJECT GENERIC TYPES
+            bool isGeneric =
+                types.contains('political') ||
+                types.contains(
+                  'locality',
+                ) ||
+                types.contains('sublocality_level_1');
+                types.contains('city') ||
+                types.contains('sublocality') ||
+                types.contains('administrative_area_level_1') ||
+                types.contains('country') ||
+                types.contains('route'); // Rejects plain street names
+            debugPrint(
+              "   - Checking place '${place['name']}' with types: $types. Is generic? $isGeneric",
+            );
+            return !isGeneric;
+          },
+          // If NO specific results are found after checking all, return null.
+          orElse: () => null,
+        );
+
+        // If no suitable result was found, fail this stage and fall back to reverse geocoding.
+        if (bestResult == null) {
+          debugPrint(
+            "   ⚠️ No specific (non-generic) places found in the radius. Failing Stage 1.",
+          );
+          return null;
+        }
+
+        debugPrint("   ✅ Found specific place: '${bestResult['name']}'");
+
+        // Now we build the PlaceAddress object from the good result
         return PlaceAddress(
           name: bestResult['name'],
-          fullAddress:
-              bestResult['vicinity'] ??
-              'Near ${bestResult['name']}', // <-- CORRECTED PARAMETER
+          fullAddress: bestResult['vicinity'] ?? 'Near ${bestResult['name']}',
           coordinates: LatLng(
             bestResult['geometry']['location']['lat'],
             bestResult['geometry']['location']['lng'],
@@ -330,7 +452,7 @@ class GoogleMapsService {
     );
   }
 
-  // Method with the second correction
+  /// ✅ THIS METHOD CORRECTLY BUILDS THE COMPLETE OBJECT
   PlaceAddress _buildPlaceAddressFromResult(
     Map<String, dynamic> result,
     LatLng originalCoords,
@@ -365,12 +487,10 @@ class GoogleMapsService {
           "Selected Area";
     }
 
-    // ==========================================================
-    // =========== FIX #2 IS HERE ===============================
-    // ==========================================================
+    // This correctly returns both the specific name and the full address string.
     return PlaceAddress(
       name: primaryName,
-      fullAddress: formattedAddress, // <-- CORRECTED PARAMETER
+      fullAddress: formattedAddress,
       coordinates: originalCoords,
       placeType: (result['types'] as List).isNotEmpty
           ? result['types'][0] as String?

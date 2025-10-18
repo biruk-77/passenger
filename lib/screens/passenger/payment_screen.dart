@@ -14,6 +14,7 @@ import '../../models/payments/payment_option.dart';
 import '../../services/api_service.dart';
 import '../../utils/api_exception.dart';
 import '../../utils/logger.dart';
+import '../../widgets/glowing_text_field.dart';
 
 class PaymentScreenData {
   final List<PaymentOption> allOptions;
@@ -43,7 +44,7 @@ class _PaymentScreenState extends State<PaymentScreen>
   // ✅ ADDED: Animation controllers for the new background
   late final AnimationController _gradientController;
   late final AnimationController _burstController;
-
+  final TextEditingController _phoneController = TextEditingController();
   late Future<PaymentScreenData> _dataFuture;
   PaymentOption? _selectedMethod;
   bool _isGatewaySubmitting = false;
@@ -76,6 +77,7 @@ class _PaymentScreenState extends State<PaymentScreen>
     // ✅ DISPOSED: New background controllers
     _gradientController.dispose();
     _burstController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -265,7 +267,9 @@ class _PaymentScreenState extends State<PaymentScreen>
                     child: Text(
                       l10n.paymentNoMethodsAvailable,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   );
@@ -277,6 +281,7 @@ class _PaymentScreenState extends State<PaymentScreen>
                   children:
                       [
                             _buildHeader(l10n),
+                            _buildPhoneInputField(l10n),
                             const SizedBox(height: 32.0),
                             if (data.preferredOption != null) ...[
                               _buildSectionHeader(l10n.paymentPreferredMethod),
@@ -315,7 +320,42 @@ class _PaymentScreenState extends State<PaymentScreen>
     );
   }
 
-  // --- WIDGETS BELOW ARE NOW THEME-AWARE ---
+  Widget _buildPhoneInputField(AppLocalizations l10n) {
+    // Logic to decide when to show the phone field. Adjust names if needed.
+    final bool shouldShow =
+        _selectedMethod != null &&
+        (_selectedMethod!.name.toLowerCase().contains('telebirr') ||
+            _selectedMethod!.name.toLowerCase().contains('cbe birr'));
+
+    // Use AnimatedSize and AnimatedOpacity for a smooth appearance/disappearance.
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: shouldShow ? 1.0 : 0.0,
+        child: shouldShow
+            ? Padding(
+                padding: const EdgeInsets.only(top: 24.0),
+                child: GlowingTextField(
+                  // Using your custom text field for consistency
+                  controller: _phoneController,
+                  hintText: l10n.authPhoneNumber,
+                  icon: Icons.phone_android,
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.authErrorEnterPhone;
+                    }
+                    // You can add more phone number validation here if you want
+                    return null; // Valid
+                  },
+                ),
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
 
   List<PaymentOption> _getVisibleOptions(
     List<PaymentOption> all,
@@ -360,7 +400,7 @@ class _PaymentScreenState extends State<PaymentScreen>
       child: Text(
         title.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -390,7 +430,7 @@ class _PaymentScreenState extends State<PaymentScreen>
           l10n.paymentSelectGateway,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -404,14 +444,14 @@ class _PaymentScreenState extends State<PaymentScreen>
       color: theme.colorScheme.surface,
       elevation: isSelected ? 8 : 2,
       shadowColor: isSelected
-          ? theme.colorScheme.primary.withOpacity(0.5)
+          ? theme.colorScheme.primary.withValues(alpha: 0.5)
           : theme.shadowColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: isSelected
               ? theme.colorScheme.primary
-              : theme.dividerColor.withOpacity(0.2),
+              : theme.dividerColor.withValues(alpha: 0.2),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -428,24 +468,28 @@ class _PaymentScreenState extends State<PaymentScreen>
                     method.logo!,
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withOpacity(0.1),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.business,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ),
                 )
               : Container(
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.business,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
         ),
@@ -454,7 +498,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
             : Icon(
                 Icons.circle_outlined,
-                color: theme.dividerColor.withOpacity(0.5),
+                color: theme.dividerColor.withValues(alpha: 0.5),
               ),
         onTap: () => _onMethodSelected(method),
       ),
@@ -487,7 +531,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             child: Text(
               l10n.paymentOr,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -528,7 +572,7 @@ class _PaymentScreenState extends State<PaymentScreen>
               ),
               radius: 1.5,
               colors: [
-                theme.colorScheme.secondary.withOpacity(0.7),
+                theme.colorScheme.secondary.withValues(alpha: 0.7),
                 theme.scaffoldBackgroundColor,
               ],
               stops: const [0.0, 1.0],
@@ -557,8 +601,8 @@ class _PaymentScreenState extends State<PaymentScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.secondary.withOpacity(0.2),
+                  theme.colorScheme.primary.withValues(alpha: 0.3),
+                  theme.colorScheme.secondary.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -667,7 +711,7 @@ class _ManualPaymentSheetState extends State<_ManualPaymentSheet> {
               Text(
                 l10n.paymentManualUploadSubtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 24),
@@ -685,12 +729,13 @@ class _ManualPaymentSheetState extends State<_ManualPaymentSheet> {
               GestureDetector(
                 onTap: _pickImage,
                 child: DottedBorder(
-             
                   child: Container(
                     height: 150,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withOpacity(0.05),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.05,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: _receiptImage != null
@@ -707,16 +752,17 @@ class _ManualPaymentSheetState extends State<_ManualPaymentSheet> {
                               Icon(
                                 Icons.cloud_upload_outlined,
                                 size: 40,
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.6,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 l10n.paymentTapToSelectReceipt,
                                 style: TextStyle(
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.6),
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ),
                             ],

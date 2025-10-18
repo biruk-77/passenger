@@ -791,6 +791,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get completeProfileSubtitle => 'Complete your profile to continue.';
 
   @override
+  String get errorEnterregex => 'check special characters or lower and upper case.';
+
+  @override
   String get mySubscriptionsTitle => 'My Subscriptions';
 
   @override
@@ -1458,7 +1461,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myTransactions => 'My Transactions';
 
   @override
-  String get errorPrefix => 'Error';
+  String get errorPrefix => 'An Error Occurred';
 
   @override
   String get currentWalletBalance => 'Current Wallet Balance';
@@ -1467,19 +1470,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionHistory => 'Transaction History';
 
   @override
-  String get noTransactionsYet => 'No transactions yet';
+  String get noTransactionsYet => 'No Transactions Yet';
 
   @override
   String get yourRecentTransactionsWillAppearHere => 'Your recent transactions will appear here.';
 
   @override
-  String get transactionStatusCompleted => 'COMPLETED';
+  String get transactionStatusCompleted => 'Completed';
 
   @override
-  String get transactionStatusPending => 'PENDING';
+  String get transactionStatusPending => 'Pending';
 
   @override
-  String get transactionStatusFailed => 'FAILED';
+  String get transactionStatusFailed => 'Failed';
 
   @override
   String get subscriptionDetails => 'Subscription Details';
@@ -1708,4 +1711,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resendingOtp => 'Resending OTP...';
+
+  @override
+  String get mapLayersTitle => 'Map Layers';
+
+  @override
+  String get mapLayersDark => 'Dark';
+
+  @override
+  String get mapLayersLight => 'Light';
+
+  @override
+  String get mapLayersSatellite => 'Satellite';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get paid => 'Paid';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get above => 'Above';
+
+  @override
+  String get moreFilters => 'More Filters';
+
+  @override
+  String get dateRange => 'Date Range';
+
+  @override
+  String get anyDate => 'Any Date';
+
+  @override
+  String get sortBy => 'Sort By';
+
+  @override
+  String get sortNewestFirst => 'Newest First';
+
+  @override
+  String get sortOldestFirst => 'Oldest First';
+
+  @override
+  String get sortAmountHighest => 'Amount (High to Low)';
+
+  @override
+  String get sortAmountLowest => 'Amount (Low to High)';
+
+  @override
+  String get applyFilters => 'Apply';
+
+  @override
+  String get transactionID => 'Transaction ID';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get bookingID => 'Booking ID';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get noMatchingTransactions => 'No Transactions Match Your Filters';
+
+  @override
+  String get tryAdjustingFilters => 'Try adjusting or clearing your search filters to see results.';
 }

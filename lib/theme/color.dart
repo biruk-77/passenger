@@ -3,33 +3,27 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // === PRIMARY BRAND PALETTE (FROM LOGO) ===
-  static const Color primaryColor = Color(0xFF1A3762); // Deep Blue from Logo
-  static const Color secondaryColor = Color(
-    0xFF132A4A,
-  ); // A darker shade for gradients
-  static const Color accentColor = Color(
-    0xFF2E5D9A,
-  ); // A lighter shade for accents
+  // ✅ UPDATED: New primary color based on #004080
+  static const Color primaryColor = Color(0xFF004080);
+
+  // ✅ UPDATED: A darker shade of the new primary for gradients and depth
+  static const Color secondaryColor = Color(0xFF002D5C);
+
+  // ✅ UPDATED: A lighter, more vibrant shade for accents
+  static const Color accentColor = Color(0xFF0059B2);
 
   // === UI BACKGROUNDS (DARK THEME) ===
-  static const Color background = Color(
-    0xFF0F172A,
-  ); // A very dark, slightly blue-tinted background
-  static const Color cardBackground = Color(
-    0xFF1E293B,
-  ); // A lighter blue-grey for cards
+  // These still work well with the new primary color
+  static const Color background = Color(0xFF0F172A);
+  static const Color cardBackground = Color(0xFF1E293B);
 
   // === PRIMARY ACCENT COLOR ===
   static const Color goldenrod = Color(0xFFFFC107); // Rich gold/yellow
   static const Color accentGold = goldenrod;
 
   // === NEUTRALS ===
-  static const Color textPrimary = Color(
-    0xFFF1F5F9,
-  ); // Slightly off-white for better readability
-  static const Color textSecondary = Color(
-    0xFF94A3B8,
-  ); // Muted grey for subtitles
+  static const Color textPrimary = Color(0xFFF1F5F9);
+  static const Color textSecondary = Color(0xFF94A3B8);
   static const Color textSubtle = Color(0xFF64748B);
   static const Color iconColor = Color(0xFFE2E8F0);
   static const Color borderColor = Color(0xFF334155);
@@ -46,7 +40,8 @@ class AppColors {
   static const Color statusError = error;
 
   // === LEGACY & COMPATIBILITY ===
-  static const Color brandBlue = primaryColor;
+  static const Color brandBlue =
+      primaryColor; // This now points to the new color
   static const Color brandWhite = textPrimary;
   static const Color vibrantYellow = Color(0xFFFFD600);
   static const Color electricLime = Color(0xFFCCFF00);

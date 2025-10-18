@@ -3,7 +3,6 @@
       This file must be delivered complete. 
       Any changes must preserve the exported public API. */
 import 'dart:async';
-import 'dart:ui'; // STEP 1: ADDED IMPORT
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -188,7 +187,7 @@ class _OngoingTripPanelContentState extends State<OngoingTripPanelContent>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -216,8 +215,8 @@ class _OngoingTripPanelContentState extends State<OngoingTripPanelContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -312,7 +311,7 @@ class _EtaDisplay extends StatelessWidget {
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.cardBackground.withOpacity(0.5),
+            color: AppColors.cardBackground.withValues(alpha: 0.5),
             border: Border.all(color: Colors.white12, width: 2),
           ),
           child: Center(
@@ -327,12 +326,19 @@ class _EtaDisplay extends StatelessWidget {
                       key: const ValueKey('eta_value'),
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          etaToDestination!,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
+                        // Make ETA responsive to avoid oversized/overflow text
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            etaToDestination!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -381,7 +387,7 @@ class _EtaDisplay extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground.withOpacity(0.5),
+            color: AppColors.cardBackground.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(100),
           ),
           child: Row(
@@ -479,7 +485,7 @@ class _DriverInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.white24),
             ),

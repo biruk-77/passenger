@@ -791,6 +791,9 @@ class AppLocalizationsTi extends AppLocalizations {
   String get completeProfileSubtitle => 'መረጋጋት ሓላፍነታትካ ኣብ ፕሮፋይል ኣብሎ ኣብ ቀጺሉ መድረስ።';
 
   @override
+  String get errorEnterregex => 'check special characters or lower and upper case.';
+
+  @override
   String get mySubscriptionsTitle => 'ምዝገባታተይ';
 
   @override
@@ -1708,4 +1711,73 @@ class AppLocalizationsTi extends AppLocalizations {
 
   @override
   String get resendingOtp => 'ኮድ እንደገና ይስደድ ኣሎ...';
+
+  @override
+  String get mapLayersTitle => 'Map Layers';
+
+  @override
+  String get mapLayersDark => 'Dark';
+
+  @override
+  String get mapLayersLight => 'Light';
+
+  @override
+  String get mapLayersSatellite => 'Satellite';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get paid => 'Paid';
+
+  @override
+  String get pending => 'Pending';
+
+  @override
+  String get above => 'Above';
+
+  @override
+  String get moreFilters => 'More Filters';
+
+  @override
+  String get dateRange => 'Date Range';
+
+  @override
+  String get anyDate => 'Any Date';
+
+  @override
+  String get sortBy => 'Sort By';
+
+  @override
+  String get sortNewestFirst => 'Newest First';
+
+  @override
+  String get sortOldestFirst => 'Oldest First';
+
+  @override
+  String get sortAmountHighest => 'Amount (High to Low)';
+
+  @override
+  String get sortAmountLowest => 'Amount (Low to High)';
+
+  @override
+  String get applyFilters => 'Apply';
+
+  @override
+  String get transactionID => 'Transaction ID';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get bookingID => 'Booking ID';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get noMatchingTransactions => 'No Transactions Match Your Filters';
+
+  @override
+  String get tryAdjustingFilters => 'Try adjusting or clearing your search filters to see results.';
 }

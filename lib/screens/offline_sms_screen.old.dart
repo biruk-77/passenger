@@ -12,7 +12,7 @@ class OfflineSmsScreen extends StatefulWidget {
 
 class _OfflineSmsScreenState extends State<OfflineSmsScreen> {
   static const MethodChannel _smsChannel = MethodChannel(
-    'com.example.pasenger/sms',
+    'com.dailytransport.pasenger/sms',
   );
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../providers/saved_places_provider.dart';
 import '../../theme/color.dart';
@@ -85,9 +84,9 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.background.withOpacity(0.25),
+                color: theme.colorScheme.background.withValues(alpha: 0.25),
                 border: Border.all(
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 ),
               ),
               child: SingleChildScrollView(
@@ -151,7 +150,7 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
             Text(
               "Explore your favorite destinations",
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -170,19 +169,19 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.onSurface.withOpacity(0.15),
-              theme.colorScheme.onSurface.withOpacity(0.08),
+              theme.colorScheme.onSurface.withValues(alpha: 0.15),
+              theme.colorScheme.onSurface.withValues(alpha: 0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withOpacity(0.3),
+              color: theme.shadowColor.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -193,7 +192,7 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.2),
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -207,14 +206,14 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
               child: Text(
                 l10n.discoverySearchDestination,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                 ),
               ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withOpacity(0.1),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -272,15 +271,15 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                theme.colorScheme.onSurface.withOpacity(0.12),
-                theme.colorScheme.onSurface.withOpacity(0.06),
+                theme.colorScheme.onSurface.withValues(alpha: 0.12),
+                theme.colorScheme.onSurface.withValues(alpha: 0.06),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: theme.colorScheme.onSurface.withOpacity(0.15),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
             ),
           ),
           child: Column(
@@ -313,7 +312,7 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      theme.colorScheme.onSurface.withOpacity(0.1),
+                      theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       Colors.transparent,
                     ],
                   ),
@@ -412,11 +411,13 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
               onTap: () {
                 Navigator.of(context).pop();
                 if (type == 'home')
-                  widget.onEnterPickingMode(MapPickingMode.setHome);
-                if (type == 'work')
+                  {widget.onEnterPickingMode(MapPickingMode.setHome);}
+                if (type == 'work') {
                   widget.onEnterPickingMode(MapPickingMode.setWork);
-                if (type == 'favorite')
+                }
+                if (type == 'favorite') {
                   widget.onEnterPickingMode(MapPickingMode.addFavorite);
+                }
               },
             ),
             _ActionSheetItem(
@@ -427,8 +428,9 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
                 Navigator.of(context).pop();
                 if (type == 'home') provider.deleteHome();
                 if (type == 'work') provider.deleteWork();
-                if (type == 'favorite' && place != null)
+                if (type == 'favorite' && place != null) {
                   provider.removeFavorite(place);
+                }
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -471,7 +473,7 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -499,8 +501,8 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -525,7 +527,7 @@ class _PremiumPanelHandle extends StatelessWidget {
       width: 40,
       height: 5,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(10),
       ),
     );
@@ -548,15 +550,15 @@ class _PremiumProfileButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.primary.withOpacity(0.3),
-              AppColors.warning.withOpacity(0.2),
+              theme.colorScheme.primary.withValues(alpha: 0.3),
+              AppColors.warning.withValues(alpha: 0.2),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
         ),
         child: Icon(Icons.person_rounded, color: theme.colorScheme.onSurface),
@@ -586,10 +588,10 @@ class _QuickActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.onSurface.withOpacity(0.08),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: theme.colorScheme.onSurface.withOpacity(0.1),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
           ),
         ),
         child: Column(
@@ -599,7 +601,7 @@ class _QuickActionButton extends StatelessWidget {
             Text(
               label,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -645,7 +647,10 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [color.withOpacity(0.3), color.withOpacity(0.1)],
+                    colors: [
+                      color.withValues(alpha: 0.3),
+                      color.withValues(alpha: 0.1),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -663,7 +668,9 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: isSet
                             ? theme.colorScheme.onSurface
-                            : theme.colorScheme.onSurface.withOpacity(0.8),
+                            : theme.colorScheme.onSurface.withValues(
+                                alpha: 0.8,
+                              ),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -672,7 +679,9 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                         fontStyle: isSet ? FontStyle.normal : FontStyle.italic,
                       ),
                       maxLines: 1,
@@ -684,7 +693,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
               if (onLongPress != null)
                 Icon(
                   Icons.more_vert_rounded,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   size: 20,
                 )
               else
@@ -694,7 +703,7 @@ class _PremiumSavedPlaceTile extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -751,9 +760,11 @@ class _PremiumTabBarSectionState extends State<_PremiumTabBarSection>
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.onSurface.withOpacity(0.06),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         children: [
@@ -763,8 +774,8 @@ class _PremiumTabBarSectionState extends State<_PremiumTabBarSection>
               controller: _tabController,
               indicatorColor: theme.colorScheme.primary,
               labelColor: theme.colorScheme.onSurface,
-              unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(
-                0.6,
+              unselectedLabelColor: theme.colorScheme.onSurface.withValues(
+                alpha: 0.6,
               ),
               indicatorWeight: 3,
               indicatorSize: TabBarIndicatorSize.tab,
@@ -853,7 +864,7 @@ class _PremiumTabBarSectionState extends State<_PremiumTabBarSection>
                 Text(
                   "${placesProvider.recentPlaces.length} ${widget.l10n.recentTrips}",
                   style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
                 TextButton(
@@ -982,13 +993,14 @@ class _PremiumPlaceTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
                   color:
-                      iconColor ?? theme.colorScheme.onSurface.withOpacity(0.7),
+                      iconColor ??
+                      theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   size: 20,
                 ),
               ),
@@ -1010,7 +1022,9 @@ class _PremiumPlaceTile extends StatelessWidget {
                       Text(
                         subtitle,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1023,7 +1037,7 @@ class _PremiumPlaceTile extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.more_vert_rounded,
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     size: 20,
                   ),
                   onPressed: onLongPress,
@@ -1031,7 +1045,7 @@ class _PremiumPlaceTile extends StatelessWidget {
               else
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: theme.colorScheme.onSurface.withOpacity(0.4),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   size: 20,
                 ),
             ],
@@ -1066,12 +1080,12 @@ class _PremiumEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.08),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
               size: 40,
             ),
           ),
@@ -1081,7 +1095,7 @@ class _PremiumEmptyState extends StatelessWidget {
           Text(
             message,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -1106,10 +1120,12 @@ class _PremiumActionSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.2)),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.3),
+            color: theme.shadowColor.withValues(alpha: 0.3),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -1192,7 +1208,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
         ),
         child: Padding(
@@ -1205,7 +1221,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
               Text(
                 content,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1216,8 +1232,9 @@ class _PremiumConfirmationDialog extends StatelessWidget {
                     child: TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
-                        backgroundColor: theme.colorScheme.onSurface
-                            .withOpacity(0.1),
+                        backgroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.1,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

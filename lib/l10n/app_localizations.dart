@@ -1625,6 +1625,12 @@ abstract class AppLocalizations {
   /// **'Complete your profile to continue.'**
   String get completeProfileSubtitle;
 
+  /// No description provided for @errorEnterregex.
+  ///
+  /// In en, this message translates to:
+  /// **'check special characters or lower and upper case.'**
+  String get errorEnterregex;
+
   /// No description provided for @mySubscriptionsTitle.
   ///
   /// In en, this message translates to:
@@ -2876,7 +2882,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorPrefix.
   ///
   /// In en, this message translates to:
-  /// **'Error'**
+  /// **'An Error Occurred'**
   String get errorPrefix;
 
   /// No description provided for @currentWalletBalance.
@@ -2894,7 +2900,7 @@ abstract class AppLocalizations {
   /// No description provided for @noTransactionsYet.
   ///
   /// In en, this message translates to:
-  /// **'No transactions yet'**
+  /// **'No Transactions Yet'**
   String get noTransactionsYet;
 
   /// No description provided for @yourRecentTransactionsWillAppearHere.
@@ -2906,19 +2912,19 @@ abstract class AppLocalizations {
   /// No description provided for @transactionStatusCompleted.
   ///
   /// In en, this message translates to:
-  /// **'COMPLETED'**
+  /// **'Completed'**
   String get transactionStatusCompleted;
 
   /// No description provided for @transactionStatusPending.
   ///
   /// In en, this message translates to:
-  /// **'PENDING'**
+  /// **'Pending'**
   String get transactionStatusPending;
 
   /// No description provided for @transactionStatusFailed.
   ///
   /// In en, this message translates to:
-  /// **'FAILED'**
+  /// **'Failed'**
   String get transactionStatusFailed;
 
   /// No description provided for @subscriptionDetails.
@@ -3340,6 +3346,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resending OTP...'**
   String get resendingOtp;
+
+  /// No description provided for @mapLayersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map Layers'**
+  String get mapLayersTitle;
+
+  /// No description provided for @mapLayersDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get mapLayersDark;
+
+  /// No description provided for @mapLayersLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get mapLayersLight;
+
+  /// No description provided for @mapLayersSatellite.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite'**
+  String get mapLayersSatellite;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paid;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @above.
+  ///
+  /// In en, this message translates to:
+  /// **'Above'**
+  String get above;
+
+  /// No description provided for @moreFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'More Filters'**
+  String get moreFilters;
+
+  /// No description provided for @dateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Range'**
+  String get dateRange;
+
+  /// No description provided for @anyDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Any Date'**
+  String get anyDate;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort By'**
+  String get sortBy;
+
+  /// No description provided for @sortNewestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest First'**
+  String get sortNewestFirst;
+
+  /// No description provided for @sortOldestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest First'**
+  String get sortOldestFirst;
+
+  /// No description provided for @sortAmountHighest.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (High to Low)'**
+  String get sortAmountHighest;
+
+  /// No description provided for @sortAmountLowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (Low to High)'**
+  String get sortAmountLowest;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get applyFilters;
+
+  /// No description provided for @transactionID.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction ID'**
+  String get transactionID;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// No description provided for @bookingID.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking ID'**
+  String get bookingID;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @noMatchingTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No Transactions Match Your Filters'**
+  String get noMatchingTransactions;
+
+  /// No description provided for @tryAdjustingFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting or clearing your search filters to see results.'**
+  String get tryAdjustingFilters;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -41,7 +41,7 @@ class AdvancedRadiusSlider extends StatelessWidget {
         child: Material(
           elevation: 12.0,
           borderRadius: BorderRadius.circular(50),
-          shadowColor: Colors.blueAccent.withOpacity(0.5),
+          shadowColor: Colors.blueAccent.withValues(alpha: 0.5),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -60,7 +60,7 @@ class AdvancedRadiusSlider extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        Colors.blueAccent.withOpacity(0.3),
+                        Colors.blueAccent.withValues(alpha: 0.3),
                         Colors.transparent,
                       ],
                     ),
@@ -77,12 +77,14 @@ class AdvancedRadiusSlider extends StatelessWidget {
                     data: SliderTheme.of(context).copyWith(
                       trackHeight: 6.0,
                       activeTrackColor: Colors.blueAccent,
-                      inactiveTrackColor: Colors.blueAccent.withOpacity(0.2),
+                      inactiveTrackColor: Colors.blueAccent.withValues(
+                        alpha: 0.2,
+                      ),
                       thumbColor: Colors.white,
                       thumbShape: const RoundSliderThumbShape(
                         enabledThumbRadius: 12.0,
                       ),
-                      overlayColor: Colors.blueAccent.withOpacity(0.25),
+                      overlayColor: Colors.blueAccent.withValues(alpha: 0.25),
                       overlayShape: const RoundSliderOverlayShape(
                         overlayRadius: 24.0,
                       ),

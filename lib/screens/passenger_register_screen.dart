@@ -221,7 +221,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               ),
               radius: 1.5,
               colors: [
-                AppColors.primaryColor.withOpacity(0.7),
+                AppColors.primaryColor.withValues(alpha: 0.7),
                 AppColors.background,
               ],
               stops: const [0.0, 1.0],
@@ -249,9 +249,9 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withOpacity(0.3),
-                  AppColors.primaryColor.withOpacity(
-                    0.2,
+                  AppColors.goldenrod.withValues(alpha: 0.3),
+                  AppColors.primaryColor.withValues(
+                    alpha: 0.2,
                   ), // Adjusted for consistency
                   Colors.transparent,
                 ],
@@ -335,9 +335,11 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.cardBackground.withOpacity(0.5),
+              color: AppColors.cardBackground.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.borderColor.withOpacity(0.5)),
+              border: Border.all(
+                color: AppColors.borderColor.withValues(alpha: 0.5),
+              ),
             ),
             child: Form(
               key: _formKey,
@@ -374,7 +376,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
   Widget _buildRegisterMethodSwitcher(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.7),
+        color: AppColors.background.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
@@ -464,7 +466,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             Container(
               width: 1,
               height: 24,
-              color: AppColors.borderColor.withOpacity(0.5),
+              color: AppColors.borderColor.withValues(alpha: 0.5),
               margin: const EdgeInsets.symmetric(horizontal: 12),
             ),
           ],
@@ -529,11 +531,21 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             onPressed: () =>
                 setState(() => _isPasswordObscured = !_isPasswordObscured),
           ),
-          validator: (v) {
-            if (v == null || v.isEmpty) return l10n.errorEnterPassword;
-            if (v.length < 6) return l10n.registerErrorPasswordShort;
-            return null;
-          },
+validator: (v) {
+  if (v == null || v.isEmpty) return l10n.errorEnterPassword;
+  if (v.length < 6) return l10n.registerErrorPasswordShort;
+
+  final passwordRegex = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^()_\-]).{6,}$',
+  );
+
+  if (!passwordRegex.hasMatch(v)) {
+    return l10n.errorEnterCurrentPassword; // Add this to your l10n
+  }
+
+  return null; // Valid password
+},
+
         ),
       ],
     );
@@ -597,7 +609,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              color: AppColors.cardBackground.withOpacity(0.8),
+              color: AppColors.cardBackground.withValues(alpha: 0.8),
               child: SafeArea(
                 child: Wrap(
                   children: AppLocalizations.supportedLocales.map((locale) {

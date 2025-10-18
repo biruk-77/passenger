@@ -72,7 +72,7 @@ class _ContractRideConfirmationPanelState
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.25),
+            color: theme.shadowColor.withValues(alpha: 0.25),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -135,16 +135,16 @@ class _ContractRideConfirmationPanelState
         Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.onSurface.withOpacity(0.1),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
             border: Border.all(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
             ),
           ),
           child: IconButton(
             onPressed: widget.onCancel,
             icon: Icon(
               Icons.close_rounded,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             tooltip: l10n.cancel,
           ),
@@ -160,11 +160,11 @@ class _ContractRideConfirmationPanelState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.5),
+        color: theme.colorScheme.surface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.3),
+            color: theme.shadowColor.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -182,13 +182,13 @@ class _ContractRideConfirmationPanelState
               effects: [
                 ShimmerEffect(
                   duration: 1500.ms,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   angle: 0.0,
                 ),
               ],
               child: Container(
                 width: 1.5,
-                color: theme.colorScheme.primary.withOpacity(0.4),
+                color: theme.colorScheme.primary.withValues(alpha: 0.4),
               ),
             ),
           ),
@@ -229,13 +229,13 @@ class _ContractRideConfirmationPanelState
           effects: [
             TintEffect(
               duration: 1500.ms,
-              color: theme.colorScheme.primary.withOpacity(0.15),
+              color: theme.colorScheme.primary.withValues(alpha: 0.15),
             ),
           ],
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.1),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: theme.colorScheme.primary, size: 18),
@@ -249,7 +249,7 @@ class _ContractRideConfirmationPanelState
               Text(
                 title,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 2),
@@ -282,7 +282,7 @@ class _ContractRideConfirmationPanelState
               ),
               radius: 1.5,
               colors: [
-                theme.colorScheme.secondary.withOpacity(0.5),
+                theme.colorScheme.secondary.withValues(alpha: 0.5),
                 theme.colorScheme.background,
               ],
               stops: const [0.0, 1.0],
@@ -311,8 +311,8 @@ class _ContractRideConfirmationPanelState
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.secondary.withOpacity(0.2),
+                  theme.colorScheme.primary.withValues(alpha: 0.3),
+                  theme.colorScheme.secondary.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -341,9 +341,11 @@ class _SubscriptionSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withOpacity(0.3),
+        color: theme.colorScheme.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +355,7 @@ class _SubscriptionSummary extends StatelessWidget {
             child: Text(
               l10n.tripSummaryTitle.toUpperCase(),
               style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
               ),
@@ -470,14 +472,14 @@ class _SubscriptionSummary extends StatelessWidget {
               icon,
               color: isGold
                   ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface.withOpacity(0.7),
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.7),
               size: 20,
             ),
             const SizedBox(width: 12),
             Text(
               title,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
             const Spacer(),
@@ -500,7 +502,7 @@ class _SubscriptionSummary extends StatelessWidget {
 
   Widget _buildDivider(BuildContext context) {
     return Divider(
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
       height: 1,
     );
   }
@@ -530,7 +532,7 @@ class _ConfirmButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.4),
+                color: theme.colorScheme.primary.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 5),
               ),
@@ -545,7 +547,7 @@ class _ConfirmButton extends StatelessWidget {
                     ShimmerEffect(
                       duration: 1800.ms,
                       delay: 1000.ms,
-                      color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.8),
                       angle: 45,
                     ),
                   ],

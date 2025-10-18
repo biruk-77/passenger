@@ -24,7 +24,7 @@ import '../models/booking_progress.dart';
 import '../models/contract/contract_ride.dart';
 import '../models/contract/driver.dart' hide AssignedDriver;
 import '../models/passenger.dart';
-import '../models/payments/payment.dart';
+
 import '../models/pricing_rule.dart';
 import '../models/ride_history.dart';
 import '../models/route.dart';
@@ -42,6 +42,7 @@ class ApiService {
   final Dio _bookingsDio;
   final Dio _contractDio;
   final AuthService _authService;
+  Future<bool>? _ongoingRefresh; // ensure single-flight refresh across requests
 
   ApiService(
     this._authService, {
@@ -161,7 +162,13 @@ class ApiService {
             debugPrint(
               "⚠️ [$_source] Token expired for ${e.requestOptions.path}. Attempting refresh...",
             );
-            bool refreshed = await _authService.refreshToken();
+
+            // Single-flight: if a refresh is already in progress, await it; otherwise start one
+            _ongoingRefresh ??= _authService.refreshToken();
+            final bool refreshed = await _ongoingRefresh!.whenComplete(() {
+              _ongoingRefresh = null;
+            });
+
             if (refreshed) {
               debugPrint(
                 "✅ [$_source] Token refresh successful. Retrying original request...",
@@ -176,6 +183,18 @@ class ApiService {
               } on DioException catch (retryError) {
                 return handler.next(retryError);
               }
+            } else {
+              // Fail fast with a clear auth error so UI can navigate to login and avoid loops
+              final apiException = ApiException(
+                "Authentication failed: Invalid token.",
+                statusCode: 401,
+              );
+              return handler.next(
+                DioException(
+                  requestOptions: e.requestOptions,
+                  error: apiException,
+                ),
+              );
             }
           }
           final apiException = ApiException.fromDioError(e);
@@ -686,17 +705,31 @@ class ApiService {
   Future<Map<String, dynamic>> paySubscriptionViaGateway({
     required String subscriptionId,
     required String paymentOptionId,
+    String? phone, // ✅ 1. ADD THE OPTIONAL PHONE PARAMETER HERE
   }) async {
     final endpoint = "/subscription/$subscriptionId/payment";
     debugPrint(
       "🚀 [ApiService] paySubscriptionViaGateway: Initiating payment for subscription ID: $subscriptionId with Option ID: $paymentOptionId",
     );
+
+    // ✅ 2. DYNAMICALLY BUILD THE REQUEST BODY
+    final Map<String, dynamic> requestData = {
+      'payment_option_id': paymentOptionId,
+      
+    };
+
+    // ✅ 3. ONLY ADD THE PHONE NUMBER IF IT'S PROVIDED
+    if (phone != null && phone.trim().isNotEmpty) {
+      requestData['phone_number'] = phone
+          .trim(); // Use the key 'phone_number' as per backend specs
+    }
+
+    debugPrint(" 👍👍👍👍👍👍👍👍👍r - Payload: $requestData");
+
     try {
-      // ✅ FINAL VERSION: This is the most robust client-side code possible.
-      // It explicitly sets headers to mimic Postman as closely as possible.
       final response = await _contractDio.post(
         endpoint,
-        data: {'payment_option_id': paymentOptionId},
+        data: requestData, // ✅ 4. SEND THE DYNAMIC DATA
       );
 
       debugPrint(
@@ -706,7 +739,7 @@ class ApiService {
           {'success': true, 'message': 'Payment initiated successfully.'};
     } on DioException catch (e) {
       debugPrint(
-        "💣 [ApiService] FAILED REQUEST HEADERS: ${e.requestOptions.headers} and also ",
+        "💣 [ApiService] FAILED REQUEST HEADERS: ${e.requestOptions.headers}",
       );
       debugPrint(
         "🔥🔥🔥 [ApiService] SERVER ERROR RESPONSE: ${e.response?.data}",
@@ -822,7 +855,7 @@ class ApiService {
     const String source = "ApiService (ratebooking)";
 
     // Use the correct Dio instance for the booking service
-    final url = '/v1/bookings/$bookingId/rate-driver';
+    final url = '/bookings/$bookingId/rate-driver';
 
     final Map<String, dynamic> body = {'rating': rating};
     if (feedback != null && feedback.isNotEmpty) {

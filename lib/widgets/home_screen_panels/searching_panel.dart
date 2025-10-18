@@ -4,7 +4,6 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../l10n/app_localizations.dart';
@@ -132,7 +131,7 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
                   '${l10n.searchingContactingDrivers}$_ellipsis',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontFamily: 'PlayfairDisplay',
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.5),
                 const SizedBox(height: 8),
@@ -144,7 +143,7 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onBackground.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.5),
                 const SizedBox(height: 32),
@@ -161,7 +160,7 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
                               shape: BoxShape.circle,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.background.withOpacity(0.8),
+                              ).colorScheme.surface.withValues(alpha: 0.8),
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.primary,
                                 width: 2,
@@ -170,7 +169,7 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
                                 BoxShadow(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.primary.withOpacity(0.3),
+                                  ).colorScheme.primary.withValues(alpha: 0.3),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                 ),
@@ -180,7 +179,7 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
                               Icons.local_taxi,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onBackground.withOpacity(0.9),
+                              ).colorScheme.onSurface.withValues(alpha: 0.9),
                               size: 40,
                             ),
                           ),
@@ -230,8 +229,8 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
               ),
               radius: 1.5,
               colors: [
-                theme.colorScheme.secondary.withOpacity(0.7),
-                theme.colorScheme.background,
+                theme.colorScheme.secondary.withValues(alpha: 0.7),
+                theme.colorScheme.surface,
               ],
               stops: const [0.0, 1.0],
             ),
@@ -259,8 +258,8 @@ class _SearchingPanelContentState extends State<SearchingPanelContent>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.secondary.withOpacity(0.2),
+                  theme.colorScheme.primary.withValues(alpha: 0.3),
+                  theme.colorScheme.secondary.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -311,7 +310,7 @@ class _RadarPainter extends CustomPainter {
       final opacity = (1.0 - t * t).clamp(0.0, 1.0);
 
       final paint = Paint()
-        ..color = color.withOpacity(opacity * 0.7)
+        ..color = color.withValues(alpha: opacity * 0.7)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
 
@@ -351,10 +350,10 @@ class _TripDetailsCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: theme.colorScheme.onSurface.withOpacity(0.05),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -371,7 +370,7 @@ class _TripDetailsCard extends StatelessWidget {
                   horizontal: 10.0,
                 ),
                 child: Divider(
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                   height: 1,
                 ),
               ),
@@ -385,7 +384,7 @@ class _TripDetailsCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Divider(
-                    color: theme.colorScheme.onSurface.withOpacity(0.1),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     height: 1,
                   ),
                 ),
@@ -450,7 +449,7 @@ class _DetailRow extends StatelessWidget {
               Text(
                 title.toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
                 ),
@@ -500,10 +499,10 @@ class _CancelButtonState extends State<_CancelButton> {
         child: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: theme.colorScheme.error.withOpacity(0.15),
+            color: theme.colorScheme.error.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: theme.colorScheme.error.withOpacity(0.5),
+              color: theme.colorScheme.error.withValues(alpha: 0.5),
               width: 1.5,
             ),
           ),
@@ -511,7 +510,7 @@ class _CancelButtonState extends State<_CancelButton> {
             child: Text(
               widget.l10n.searchingCancelButton,
               style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 letterSpacing: 0.5,
               ),
             ),

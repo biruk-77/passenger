@@ -132,8 +132,8 @@ class _GlowingTextFieldState extends State<GlowingTextField>
                   BoxShadow(
                     color: isEffectivelyReadOnly
                         ? Colors.transparent
-                        : glowColor.withOpacity(
-                            (_hasFocus || hasError) ? 0.7 : 0.0,
+                        : glowColor.withValues(
+                            alpha: (_hasFocus || hasError) ? 0.7 : 0.0,
                           ),
                     blurRadius: 10.0,
                     spreadRadius: 2.0,
@@ -166,16 +166,18 @@ class _GlowingTextFieldState extends State<GlowingTextField>
                           child: Icon(
                             widget.icon,
                             color: isEffectivelyReadOnly
-                                ? AppColors.textSecondary.withOpacity(0.5)
-                                : AppColors.textSecondary.withOpacity(0.7),
+                                ? AppColors.textSecondary.withValues(alpha: 0.5)
+                                : AppColors.textSecondary.withValues(
+                                    alpha: 0.7,
+                                  ),
                           ),
                         )
                       : null),
               suffixIcon: widget.suffixIcon,
               filled: true,
               fillColor: isEffectivelyReadOnly
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.4),
+                  ? Colors.black.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.4),
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 20,
                 horizontal: 20,
@@ -184,7 +186,7 @@ class _GlowingTextFieldState extends State<GlowingTextField>
                 borderRadius: const BorderRadius.all(Radius.circular(100)),
                 borderSide: BorderSide(
                   color: isEffectivelyReadOnly
-                      ? AppColors.borderColor.withOpacity(0.5)
+                      ? AppColors.borderColor.withValues(alpha: 0.5)
                       : AppColors.borderColor,
                 ),
               ),
@@ -192,7 +194,7 @@ class _GlowingTextFieldState extends State<GlowingTextField>
                 borderRadius: const BorderRadius.all(Radius.circular(100)),
                 borderSide: BorderSide(
                   color: isEffectivelyReadOnly
-                      ? AppColors.borderColor.withOpacity(0.5)
+                      ? AppColors.borderColor.withValues(alpha: 0.5)
                       : AppColors.borderColor,
                   width: 2,
                 ),

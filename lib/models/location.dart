@@ -5,7 +5,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../models/search_result.dart'; // Assuming this import path
 
 /// Represents a geographical point with optional address details.
 /// Used for pickup, dropoff, and general location data.

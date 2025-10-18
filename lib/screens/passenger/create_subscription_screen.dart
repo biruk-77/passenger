@@ -178,7 +178,7 @@ class _CreateSubscriptionScreenState extends State<CreateSubscriptionScreen> {
               Text(
                 l10n.reviewRequestPrompt,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 15,
                 ),
                 textAlign: TextAlign.center,
@@ -255,7 +255,7 @@ class _RouteCard extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          Divider(height: 24, color: Colors.white.withOpacity(0.3)),
+          Divider(height: 24, color: Colors.white.withValues(alpha: 0.3)),
           _RouteRow(icon: Icons.my_location, location: pickup),
           Padding(
             padding: const EdgeInsets.only(left: 12.0),
@@ -320,7 +320,7 @@ class _TappableInfoCard extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
         ),
         trailing: const Icon(Icons.chevron_right, color: Colors.white),
         onTap: onTap,
@@ -342,9 +342,9 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: child,
         ),
@@ -357,7 +357,7 @@ class _DottedLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withValues(alpha: 0.5)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
