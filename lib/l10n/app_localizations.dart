@@ -3020,7 +3020,7 @@ abstract class AppLocalizations {
   /// No description provided for @daysLeft.
   ///
   /// In en, this message translates to:
-  /// **'Guyyoota Hafan'**
+  /// **'days left'**
   String get daysLeft;
 
   /// No description provided for @expiresToday.
@@ -3484,6 +3484,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try adjusting or clearing your search filters to see results.'**
   String get tryAdjustingFilters;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @lastDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day'**
+  String get lastDay;
+
+  /// No description provided for @dayLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'day left'**
+  String get dayLeft;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

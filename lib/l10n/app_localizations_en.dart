@@ -1530,7 +1530,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get callDriver => 'Call Driver';
 
   @override
-  String get daysLeft => 'Guyyoota Hafan';
+  String get daysLeft => 'days left';
 
   @override
   String get expiresToday => 'Har\'a Xumurama';
@@ -1780,4 +1780,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tryAdjustingFilters => 'Try adjusting or clearing your search filters to see results.';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String get lastDay => 'Last day';
+
+  @override
+  String get dayLeft => 'day left';
 }

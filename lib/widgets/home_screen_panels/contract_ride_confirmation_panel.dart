@@ -434,15 +434,139 @@ class _SubscriptionSummary extends StatelessWidget {
                 : AppColors.warning,
             delay: 850.ms,
           ),
-          if (subscription.startDate != null && subscription.endDate != null)
-            _buildDetailRow(
-              context,
-              icon: Icons.date_range_rounded,
-              title: l10n.validity,
-              value:
-                  '${DateFormat.yMd().format(subscription.startDate!)} - ${DateFormat.yMd().format(subscription.endDate!)}',
-              delay: 900.ms,
-            ),
+          if (subscription.startDate != null &&
+              subscription.endDate != null) ...[
+            const SizedBox(height: 16),
+            () {
+              // --- Date Calculation Logic (Unchanged) ---
+              String daysLeftText;
+              Color statusColor;
+              IconData statusIcon;
+
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
+              final endDate = subscription.endDate!;
+              final endDateOnly = DateTime(
+                endDate.year,
+                endDate.month,
+                endDate.day,
+              );
+              final daysRemaining = endDateOnly.difference(today).inDays;
+
+              if (daysRemaining < 0) {
+                daysLeftText = l10n.expired;
+                statusColor = AppColors.error;
+                statusIcon = Icons.error_outline_rounded;
+              } else if (daysRemaining == 0) {
+                daysLeftText = l10n.lastDay;
+                statusColor = AppColors.warning;
+                statusIcon = Icons.warning_amber_rounded;
+              } else {
+                daysLeftText =
+                    '$daysRemaining ${daysRemaining == 1 ? l10n.dayLeft : l10n.daysLeft}';
+                statusColor = AppColors.success;
+                statusIcon = Icons.hourglass_bottom_rounded;
+              }
+
+              final startDateText = DateFormat.yMd().format(
+                subscription.startDate!,
+              );
+              final endDateText = DateFormat.yMd().format(
+                subscription.endDate!,
+              );
+
+              // --- New "Cage" Widget ---
+              return Animate(
+                delay: 900.ms,
+                effects: [
+                  FadeEffect(duration: 400.ms),
+                  const SlideEffect(begin: Offset(0, 0.1)),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(
+                      color: statusColor.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.date_range_rounded,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.7,
+                            ),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.validity,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
+
+                          Expanded(
+                            child: Wrap(
+                              alignment: WrapAlignment.end,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing:
+                                  4.0, // Space between start date, arrow, and end date
+                              children: [
+                                Text(
+                                  startDateText,
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '→',
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                Text(
+                                  endDateText,
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 20, thickness: 1),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(statusIcon, color: statusColor, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            daysLeftText,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }(),
+          ],
         ],
       ),
     );
@@ -452,11 +576,21 @@ class _SubscriptionSummary extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String value,
+    String? value,
+    Widget? valueWidget,
     bool isGold = false,
     Color? valueColor,
     required Duration delay,
   }) {
+    assert(
+      value != null || valueWidget != null,
+      'Either value or valueWidget must be provided.',
+    );
+    assert(
+      value == null || valueWidget == null,
+      'Cannot provide both value and valueWidget.',
+    );
+
     final theme = Theme.of(context);
     return Animate(
       delay: delay,
@@ -467,33 +601,43 @@ class _SubscriptionSummary extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: isGold
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              size: 20,
+            Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: Icon(
+                icon,
+                color: isGold
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
-            Text(
-              title,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: Text(
+                title,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
             ),
             const Spacer(),
-            Text(
-              value,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color:
-                    valueColor ??
-                    (isGold
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface),
-                fontWeight: isGold ? FontWeight.bold : FontWeight.w500,
+            if (valueWidget != null)
+              Flexible(child: valueWidget)
+            else
+              Text(
+                value!,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color:
+                      valueColor ??
+                      (isGold
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface),
+                  fontWeight: isGold ? FontWeight.bold : FontWeight.w500,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -595,6 +739,61 @@ class _ConfirmButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// --- UPDATED WIDGET ---
+class _ValidityWrapper extends StatelessWidget {
+  final String startDateText;
+  final String endDateText;
+  final String daysLeftText;
+  final Color daysLeftColor;
+
+  const _ValidityWrapper({
+    required this.startDateText,
+    required this.endDateText,
+    required this.daysLeftText,
+    required this.daysLeftColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateTextStyle = theme.textTheme.bodyLarge?.copyWith(
+      color: theme.colorScheme.onSurface,
+      fontWeight: FontWeight.w500,
+    );
+
+    // Use a Column to stack the date range and the "days left" status
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 4.0,
+          runSpacing: 4.0,
+          children: [
+            Text(startDateText, style: dateTextStyle),
+            Icon(
+              Icons.arrow_forward_rounded,
+              size: 14,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+            Text(endDateText, style: dateTextStyle),
+          ],
+        ),
+        const SizedBox(height: 4),
+        // The new "days left" text with its own style and color
+        Text(
+          daysLeftText,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: daysLeftColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

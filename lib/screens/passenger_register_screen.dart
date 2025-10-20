@@ -472,15 +472,26 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           ],
         ),
       ),
-      validator: (v) {
-        if (v == null || v.trim().isEmpty) {
-          return l10n.errorEnterPhoneNumber;
-        }
-        if (!RegExp(r'^[0-9]{7,15}$').hasMatch(v.trim())) {
-          return 'Please enter a valid phone number.';
-        }
-        return null;
-      },
+              validator: (v) {
+            final value = v?.trim();
+            if (value == null || value.isEmpty) {
+              return l10n.errorEnterPhoneNumber;
+            }
+
+            // This single regex validates all valid Ethiopian mobile formats:
+            // ^         - Start of the string.
+            // (0?9\d{8}) - Group 1: Optional '0', must be followed by '9' and 8 digits (Ethio Telecom).
+            // |         - OR
+            // (0?7\d{8}) - Group 2: Optional '0', must be followed by '7' and 8 digits (Safaricom).
+            // $         - End of the string.
+            final ethiopianPhoneRegex = RegExp(r'^(0?9\d{8}|0?7\d{8})$');
+
+            if (!ethiopianPhoneRegex.hasMatch(value)) {
+              return l10n.errorEnterPhoneNumber; // "Please enter a valid Ethio Telecom or Safaricom number."
+            }
+            
+            return null; // The number is valid.
+          },
     );
   }
 
@@ -531,21 +542,31 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             onPressed: () =>
                 setState(() => _isPasswordObscured = !_isPasswordObscured),
           ),
-validator: (v) {
-  if (v == null || v.isEmpty) return l10n.errorEnterPassword;
-  if (v.length < 6) return l10n.registerErrorPasswordShort;
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.errorEnterPassword; // "Please enter a password"
+            }
 
-  final passwordRegex = RegExp(
-    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^()_\-]).{6,}$',
-  );
+            // This single, powerful regex checks for all conditions at once.
+            // - (?=.*[a-z]):  Ensures at least one lowercase letter.
+            // - (?=.*[A-Z]):  Ensures at least one uppercase letter.
+            // - (?=.*\d):     Ensures at least one digit.
+            // - (?=.*[^\da-zA-Z]): Ensures at least one special character.
+            // - .{6,}:        Ensures a minimum length of 6 characters.
+            // - ^...$:        Ensures the string starts and ends without spaces.
+            final passwordRegex = RegExp(
+              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$',
+            );
 
-  if (!passwordRegex.hasMatch(v)) {
-    return l10n.errorEnterCurrentPassword; // Add this to your l10n
-  }
+            if (!passwordRegex.hasMatch(value)) {
+              // Return a single, comprehensive error message explaining all rules.
+              return l10n
+                  .errorEnterPassword; // e.g., "Use 6+ chars with upper, lower, number & symbol."
+            }
 
-  return null; // Valid password
-},
-
+            // If the regex passes, the password is valid.
+            return null;
+          },
         ),
       ],
     );

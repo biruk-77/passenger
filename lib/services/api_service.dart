@@ -709,7 +709,7 @@ class ApiService {
   }) async {
     final endpoint = "/subscription/$subscriptionId/payment";
     debugPrint(
-      "🚀 [ApiService] paySubscriptionViaGateway: Initiating payment for subscription ID: $subscriptionId with Option ID: $paymentOptionId",
+      "🚀 [ApiService] paySubscriptionViaGateway: Initiating payment for subscription ID: $subscriptionId with Option ID: $paymentOptionId the phone is 📱 $phone",
     );
 
     // ✅ 2. DYNAMICALLY BUILD THE REQUEST BODY

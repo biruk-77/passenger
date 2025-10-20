@@ -145,7 +145,7 @@ class _ContractDriverOnTheWayPanelContentState
                     l10n,
                   ),
                   const SizedBox(height: 24),
-                  _buildActionButtons(context, l10n),
+           
                   _buildActionButtons(context, l10n),
                 ],
               ),
@@ -470,16 +470,16 @@ class _ContractDriverOnTheWayPanelContentState
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
-          onPressed: widget.onCancel,
-          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          onPressed: widget.onConfirmDropoff,
+          icon: const Icon(Icons.shopping_cart_checkout, color: AppColors.textPrimary),
           label: Text(
-            l10n.driverOnWayCancelRide,
+            l10n.dropoff,
             style: AppTextStyles.buttonText.copyWith(
               color: AppColors.textPrimary,
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error.withValues(alpha: 0.8),
+            backgroundColor: const Color.fromARGB(255, 0, 234, 109).withValues(alpha: 0.8),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

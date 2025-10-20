@@ -134,15 +134,43 @@ class _PaymentScreenState extends State<PaymentScreen>
     }
   }
 
+  bool _isPhoneRequired(PaymentOption? method) {
+    if (method == null) return false;
+    final name = method.name.toLowerCase();
+    return name.contains('telebirr') || name.contains('cbe birr');
+  }
+
   Future<void> _initiateGatewayPayment() async {
     if (_selectedMethod == null || _isGatewaySubmitting) return;
-    setState(() => _isGatewaySubmitting = true);
+
     final l10n = AppLocalizations.of(context)!;
+    final apiService = Provider.of<ApiService>(context, listen: false);
+    String? phoneNumber;
+
+    // --- FIX STARTS HERE ---
+    // 1. Check if the selected method requires a phone number.
+    if (_isPhoneRequired(_selectedMethod)) {
+      phoneNumber = _phoneController.text.trim();
+      // 2. Validate that the phone number is not empty.
+      if (phoneNumber.isEmpty) {
+        // Show an error and stop the process if the phone is required but empty.
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.authErrorEnterPhone)));
+        return;
+      }
+    }
+    // --- FIX ENDS HERE ---
+
+    setState(() => _isGatewaySubmitting = true);
+
     try {
-      final apiService = Provider.of<ApiService>(context, listen: false);
+      // 3. Pass the (optional) phone number to the API service.
       await apiService.paySubscriptionViaGateway(
         subscriptionId: widget.subscriptionId,
         paymentOptionId: _selectedMethod!.id,
+        phone:
+            phoneNumber, // This will be null if not required, which is correct.
       );
       if (mounted) {
         await _showSuccessDialog(

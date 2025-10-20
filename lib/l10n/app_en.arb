@@ -876,7 +876,12 @@
   "retry": "Retry",
   "transactionStatusCompleted": "Completed",
   "transactionStatusPending": "Pending",
-  "transactionStatusFailed": "Failed"
+  "transactionStatusFailed": "Failed",
+    "expired": "Expired",
+  "lastDay": "Last day",
+  "dayLeft": "day left",
+  "daysLeft": "days left"
+
 
 
 

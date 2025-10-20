@@ -2335,6 +2335,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _confirmContractDropoff() async {
     if (_currentBookingId == null) {
       _showErrorSnackBar("Cannot confirm dropoff: trip ID is missing.");
+      _resetMapState();
       return;
     }
 
@@ -2347,11 +2348,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _currentBookingId!,
         notes: "Trip completed by passenger.",
       );
+      _resetMapState();
       // No need to manually reset state here, the socket event handler will do it.
     } catch (e) {
       _showErrorSnackBar("Failed to confirm dropoff. Please try again.");
       Logger.error("HomeScreen", "Error confirming contract dropoff", e);
     }
+     _resetMapState();
   }
 
   Future<void> _planOrUpdateRoute(
@@ -4050,8 +4053,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return circles;
   }
 } // This is the closing brace for the _HomeScreenState class
-
-
 
 // âœ… Make sure this typedef is defined above the class
 typedef OnEnterPickingMode = void Function(MapPickingMode mode);

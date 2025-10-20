@@ -555,24 +555,28 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             onPressed: () =>
                 setState(() => _isPasswordObscured = !_isPasswordObscured),
           ),
-          validator: (v) {
-            if (v == null || v.isEmpty) return l10n.errorEnterPassword;
-            if (v.length < 6) return l10n.registerErrorPasswordShort;
-
-            final passwordRegex = RegExp(
-              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^()_\-]).{6,}$',
-            );
-
-            if (!passwordRegex.hasMatch(v)) {
-              return l10n.errorEnterregex; // Add this to your l10n
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.errorEnterPassword; // "Please enter a password"
             }
 
-            if (!passwordRegex.hasMatch(v)) {
-              return l10n
-                  .errorEnterPassword; // Make sure to add this in your l10n file
+            // This single, powerful regex checks for all conditions at once.
+            // - (?=.*[a-z]):  Ensures at least one lowercase letter.
+            // - (?=.*[A-Z]):  Ensures at least one uppercase letter.
+            // - (?=.*\d):     Ensures at least one digit.
+            // - (?=.*[^\da-zA-Z]): Ensures at least one special character.
+            // - .{6,}:        Ensures a minimum length of 6 characters.
+            // - ^...$:        Ensures the string starts and ends without spaces.
+            final passwordRegex =
+                RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$');
+
+            if (!passwordRegex.hasMatch(value)) {
+              // Return a single, comprehensive error message explaining all rules.
+              return l10n.errorEnterPassword; // e.g., "Use 6+ chars with upper, lower, number & symbol."
             }
 
-            return null; // Valid password
+            // If the regex passes, the password is valid.
+            return null;
           },
         ),
       ],
