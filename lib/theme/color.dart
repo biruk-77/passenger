@@ -2,24 +2,49 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // === PRIMARY BRAND PALETTE (FROM LOGO) ===
-  // ✅ UPDATED: New primary color based on #004080
+  // === WINDSURFING THEME COLORS ===
+  // Ocean blue - primary color from Grace #004080
   static const Color primaryColor = Color(0xFF004080);
-
-  // ✅ UPDATED: A darker shade of the new primary for gradients and depth
-  static const Color secondaryColor = Color(0xFF002D5C);
-
-  // ✅ UPDATED: A lighter, more vibrant shade for accents
-  static const Color accentColor = Color(0xFF0059B2);
-
-  // === UI BACKGROUNDS (DARK THEME) ===
-  // These still work well with the new primary color
-  static const Color background = Color(0xFF0F172A);
-  static const Color cardBackground = Color(0xFF1E293B);
+  
+  // Deep ocean - for night mode water
+  static const Color deepOcean = Color(0xFF001A33);
+  
+  // Night navy - darker shade for night sky
+  static const Color nightNavy = Color(0xFF002D5C);
+  
+  // Bright ocean - vibrant shade for day mode accents
+  static const Color brightOcean = Color(0xFF0059B2);
+  
+  // === DAY MODE ("Day Session") COLORS ===
+  static const Color dayBackground = Color(0xFFF0F7FF); // Light sky blue-white
+  static const Color daySky = Color(0xFF87CEEB); // Sky blue
+  static const Color daySand = Color(0xFFF5E6D3); // Sandy beige
+  static const Color dayCardBackground = Colors.white;
+  static const Color dayWater = Color(0xFF4A90E2); // Bright water blue
+  
+  // === NIGHT MODE ("Night Session") COLORS ===
+  static const Color nightBackground = deepOcean; // Deep ocean background
+  static const Color nightSky = Color(0xFF0F172A); // Dark night sky
+  static const Color nightCardBackground = Color(0xFF1E293B); // Dark card
+  static const Color nightWater = primaryColor; // Ocean blue for water
+  
+  // === UI BACKGROUNDS ===
+  static const Color background = nightSky;
+  static const Color cardBackground = nightCardBackground;
+  
+  // === ACCENT COLORS ===
+  static const Color sunsetOrange = Color(0xFFFF6B35); // Sunset/sunrise orange
+  static const Color neonCyan = Color(0xFF18FFFF); // Night mode accent
+  static const Color coralRed = Color(0xFFFF7F50); // Day mode accent
+  static const Color sunYellow = Color(0xFFFFD700); // Bright sun yellow
 
   // === PRIMARY ACCENT COLOR ===
   static const Color goldenrod = Color(0xFFFFC107); // Rich gold/yellow
   static const Color accentGold = goldenrod;
+  
+  // Windsurfing theme accent
+  static const Color secondaryColor = nightNavy;
+  static const Color accentColor = brightOcean;
 
   // === NEUTRALS ===
   static const Color textPrimary = Color(0xFFF1F5F9);

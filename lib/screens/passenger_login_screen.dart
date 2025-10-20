@@ -13,9 +13,10 @@ import '../providers/theme_provider.dart';
 import '../theme/color.dart';
 import '../theme/styles.dart';
 import '../widgets/glowing_text_field.dart';
+import '../widgets/animated_theme_toggle.dart';
 import 'otp_verification_screen.dart';
 import '../services/auth_service.dart';
-import 'passenger_register_screen.dart';
+import 'passenger_register_screen_fixed.dart';
 import 'home_screen.dart';
 import '../utils/logger.dart';
 
@@ -211,7 +212,13 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
           FadeIn(
             delay: const Duration(milliseconds: 800),
             duration: const Duration(milliseconds: 500),
-            child: Row(children: [_buildThemeButton(), _buildLanguageButton()]),
+            child: Row(
+              children: [
+                _buildThemeButton(),
+                const SizedBox(width: 8),
+                _buildLanguageButton(),
+              ],
+            ),
           ),
         ],
       ),
@@ -277,23 +284,167 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
   }
 
   Widget _buildAnimatedGradientBackground() {
-    // ... (This widget is fine as is) ...
-    return AnimatedBuilder(
-      animation: _gradientController,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(
-                -2.0 + (_gradientController.value * 4),
-                1.0 - (_gradientController.value * 5),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return AnimatedBuilder(
+          animation: _gradientController,
+          builder: (context, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? LinearGradient(
+                        // "Twilight Sail" - Deep indigo night sky to dark ocean
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF0D1B2A), // Dark indigo night sky
+                          const Color(0xFF415A77), // Mid-tone transition
+                          const Color(0xFF000814), // Near-black ocean
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      )
+                    : LinearGradient(
+                        // Grace's Light Mode - BY Grace: #004080
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF004080), // BY Grace: rgba(0, 64, 128)
+                          const Color(0xFF0066CC), // Lighter transition
+                          const Color(0xFF4A90E2), // Softer blue
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
               ),
-              radius: 1.5,
-              colors: [
-                AppColors.primaryColor.withValues(alpha: 0.7),
-                const Color.fromARGB(255, 6, 9, 16),
-              ],
-              stops: const [0.0, 1.0],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeButton() {
+    return const AnimatedThemeToggle();
+  }
+
+  Widget _buildLanguageButton() {
+    return Consumer2<LocaleProvider, ThemeProvider>(
+      builder: (context, localeProvider, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        return IconButton(
+          icon: Icon(
+            PhosphorIcons.translate, 
+            color: isDark ? AppColors.textPrimary : Colors.white, // White icon on Grace's blue
+          ),
+          onPressed: () => _showLanguagePicker(context, localeProvider),
+        );
+      },
+    );
+  }
+
+  Widget _buildTitles(AppLocalizations l10n) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return Column(
+          children: [
+            FadeInDown(
+              duration: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 800),
+              child: Text(
+                l10n.loginWelcomeBack,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: isDark ? AppColors.textPrimary : Colors.white, // White text on Grace's blue
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            FadeInDown(
+              duration: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 1000),
+              child: Text(
+                l10n.signInButton,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: isDark ? AppColors.textSecondary : Colors.white70, // Light white text on Grace's blue
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGlassmorphicForm(AppLocalizations l10n) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return FadeInUp(
+          duration: const Duration(milliseconds: 600),
+          delay: const Duration(milliseconds: 1200),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFFFFB500).withValues(alpha: 0.8) // Yellow men with frosted glass
+                      : Colors.black.withValues(alpha: 0.9), // More opaque white for Grace's blue background
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF00B4D8).withValues(alpha: 0.3) // Neon Cyan glow border
+                        : Colors.black.withValues(alpha: 0.5), // Soft white border
+                  ),
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF00B4D8).withValues(alpha: 0.2), // Neon Cyan glow
+                            blurRadius: 20,
+                            spreadRadius: -5,
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05), // Soft diffused shadow
+                            blurRadius: 20,
+                            spreadRadius: -5,
+                          ),
+                        ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLoginMethodSwitcher(l10n),
+                      const SizedBox(height: 24),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.fastOutSlowIn,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: _selectedMethod == LoginMethod.phone
+                              ? _buildPhoneForm(l10n)
+                              : _buildEmailForm(l10n),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSubmitButton(l10n),
+                      const SizedBox(height: 24),
+                      _buildRegisterLink(l10n),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -301,139 +452,44 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
     );
   }
 
-  Widget _buildThemeButton() {
-    // ... (This widget is fine as is) ...
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) => IconButton(
-        icon: Icon(
-          themeProvider.themeMode == ThemeMode.dark
-              ? PhosphorIcons.sun
-              : PhosphorIcons.moon,
-          color: AppColors.textPrimary,
-        ),
-        onPressed: () => themeProvider.toggleTheme(
-          themeProvider.themeMode != ThemeMode.dark,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLanguageButton() {
-    // ... (This widget is fine as is) ...
-    return Consumer<LocaleProvider>(
-      builder: (context, localeProvider, _) => IconButton(
-        icon: const Icon(PhosphorIcons.translate, color: AppColors.textPrimary),
-        onPressed: () => _showLanguagePicker(context, localeProvider),
-      ),
-    );
-  }
-
-  Widget _buildTitles(AppLocalizations l10n) {
-    // Added slightly longer delays to sync with the new burst effect
-    return Column(
-      children: [
-        FadeInDown(
-          duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 800),
-          child: Text(
-            l10n.loginWelcomeBack,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        FadeInDown(
-          duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 1000),
-          child: Text(
-            l10n.signInButton, // Add this to your l10n files: 'Sign in to continue your journey'
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGlassmorphicForm(AppLocalizations l10n) {
-    // Added slightly longer delay
-    return FadeInUp(
-      duration: const Duration(milliseconds: 600),
-      delay: const Duration(milliseconds: 1200),
-      child: ClipRRect(
-        // ... (rest of the form widget is fine) ...
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.borderColor.withValues(alpha: 0.5),
-              ),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildLoginMethodSwitcher(l10n),
-                  const SizedBox(height: 24),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.fastOutSlowIn,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) =>
-                          FadeTransition(opacity: animation, child: child),
-                      child: _selectedMethod == LoginMethod.phone
-                          ? _buildPhoneForm(l10n)
-                          : _buildEmailForm(l10n),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  _buildSubmitButton(l10n),
-                  const SizedBox(height: 24),
-                  _buildRegisterLink(l10n),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   // --- No changes needed for the widgets below this line ---
 
   Widget _buildLoginMethodSwitcher(AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSwitcherButton(
-            l10n,
-            LoginMethod.phone,
-            l10n.loginMethodPhone,
-            PhosphorIcons.phone,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark 
+                ? const Color(0xFF1B263B).withValues(alpha: 0.7)
+                : Colors.white.withValues(alpha: 0.9), // More opaque for Grace's blue
+            borderRadius: BorderRadius.circular(100),
+            border: isDark 
+                ? Border.all(color: AppColors.neonCyan.withValues(alpha: 0.3))
+                : null,
           ),
-          _buildSwitcherButton(
-            l10n,
-            LoginMethod.email,
-            l10n.loginMethodEmail,
-            PhosphorIcons.envelopeSimple,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSwitcherButton(
+                l10n,
+                LoginMethod.phone,
+                l10n.loginMethodPhone,
+                PhosphorIcons.phone,
+                isDark,
+              ),
+              _buildSwitcherButton(
+                l10n,
+                LoginMethod.email,
+                l10n.loginMethodEmail,
+                PhosphorIcons.envelopeSimple,
+                isDark,
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -442,6 +498,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
     LoginMethod method,
     String label,
     IconData icon,
+    bool isDark,
   ) {
     final isSelected = _selectedMethod == method;
     return GestureDetector(
@@ -456,7 +513,9 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.goldenrod : Colors.transparent,
+          color: isSelected 
+              ? (isDark ? AppColors.sunsetOrange : const Color(0xFF004080)) // Grace's blue for selected
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
@@ -464,14 +523,18 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             Icon(
               icon,
               size: 20,
-              color: isSelected ? Colors.black : AppColors.textSecondary,
+              color: isSelected 
+                  ? Colors.white
+                  : (isDark ? AppColors.textSecondary : const Color(0xFF004080)), // Grace's blue for unselected
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.black : AppColors.textSecondary,
+                color: isSelected 
+                    ? Colors.white
+                    : (isDark ? AppColors.textSecondary : const Color(0xFF004080)), // Grace's blue for unselected
               ),
             ),
           ],
@@ -584,76 +647,132 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
   }
 
   Widget _buildSubmitButton(AppLocalizations l10n) {
-    return SizedBox(
-      width: double.infinity,
-      child: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.goldenrod),
-            )
-          : ElevatedButton(
-              onPressed: _handleLogin,
-              child: Text(
-                _selectedMethod == LoginMethod.phone
-                    ? l10n.sendOtpButton
-                    : l10n.signInButton,
-              ),
-            ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return SizedBox(
+          width: double.infinity,
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: isDark ? AppColors.sunsetOrange : Colors.white, // White loading indicator on Grace's blue
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? [AppColors.sunsetOrange, AppColors.sunsetOrange.withValues(alpha: 0.8)]
+                          : [const Color(0xFF004080), const Color(0xFF0066CC)], // Grace's blue gradient
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? AppColors.sunsetOrange.withValues(alpha: 0.3)
+                            : const Color(0xFF004080).withValues(alpha: 0.3), // Grace's blue shadow
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    onPressed: _handleLogin,
+                    child: Text(
+                      _selectedMethod == LoginMethod.phone
+                          ? l10n.sendOtpButton
+                          : l10n.signInButton,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 
   Widget _buildRegisterLink(AppLocalizations l10n) {
-    return FadeInUp(
-      delay: const Duration(milliseconds: 1400),
-      duration: const Duration(milliseconds: 600),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            l10n.dontHaveAccount,
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const PassengerRegisterScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return FadeInUp(
+          delay: const Duration(milliseconds: 1400),
+          duration: const Duration(milliseconds: 600),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n.dontHaveAccount,
+                style: TextStyle(
+                  color: isDark ? AppColors.textSecondary : Colors.white70, // White text on Grace's blue
+                ),
               ),
-            ),
-            child: Text(
-              l10n.register,
-              style: const TextStyle(
-                color: AppColors.goldenrod,
-                fontWeight: FontWeight.bold,
+              TextButton(
+                onPressed: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const PassengerRegisterScreen(),
+                  ),
+                ),
+                child: Text(
+                  l10n.register,
+                  style: TextStyle(
+                    color: isDark ? AppColors.sunsetOrange : Colors.white, // White text on Grace's blue
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildOfflineSmsButton(AppLocalizations l10n) {
-    return FadeInUp(
-      delay: const Duration(milliseconds: 1500),
-      duration: const Duration(milliseconds: 600),
-      child: TextButton.icon(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const OfflineSmsScreen()),
-          );
-        },
-        icon: const Icon(
-          PhosphorIcons.paperPlaneTilt,
-          color: AppColors.textSecondary,
-          size: 20,
-        ),
-        label: Text(
-          l10n.smsOfflineLogin,
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        ),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return FadeInUp(
+          delay: const Duration(milliseconds: 1500),
+          duration: const Duration(milliseconds: 600),
+          child: TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const OfflineSmsScreen()),
+              );
+            },
+            icon: Icon(
+              PhosphorIcons.paperPlaneTilt,
+              color: isDark ? AppColors.textSecondary : Colors.white70, // White text on Grace's blue
+              size: 20,
+            ),
+            label: Text(
+              l10n.smsOfflineLogin,
+              style: TextStyle(
+                color: isDark ? AppColors.textSecondary : Colors.white70, // White text on Grace's blue
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+          ),
+        );
+      },
     );
   }
 

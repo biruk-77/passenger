@@ -31,6 +31,7 @@ import 'utils/constants.dart';
 import 'theme/themes.dart';
 import 'utils/logger.dart'; // Make sure you have a logger
 import 'screens/video_splash_screen.dart';
+import 'widgets/theme_transition_animation.dart';
 
 // <-- 2. ADD THIS FUNCTION TO REQUEST PERMISSION
 /// This function requests the mandatory notification permission on Android 13+.
@@ -215,7 +216,9 @@ class MyApp extends StatelessWidget {
         Locale('so'),
         Locale('ti'),
       ],
-      home: const AuthWrapper(),
+      home: const ThemeTransitionAnimation(
+        child: AuthWrapper(),
+      ),
     );
   }
 }

@@ -13,6 +13,7 @@ import '../providers/theme_provider.dart';
 import '../theme/color.dart';
 import '../theme/styles.dart';
 import '../widgets/glowing_text_field.dart';
+import '../widgets/animated_theme_toggle.dart';
 import 'otp_verification_screen.dart';
 import '../services/auth_service.dart';
 import 'passenger_login_screen.dart';
@@ -43,20 +44,17 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
   Country _selectedCountry = Country.parse('ET');
   bool _isPasswordObscured = true;
 
-  // --- ✅ NEW: Controllers now exactly match the login screen ---
   late final AnimationController _gradientController;
   late final AnimationController _burstController;
 
   @override
   void initState() {
     super.initState();
-    // --- ✅ NEW: Gradient controller from login screen ---
     _gradientController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
 
-    // Burst animation controller remains the same
     _burstController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -70,7 +68,6 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
 
   @override
   void dispose() {
-    // --- ✅ NEW: Dispose gradient controller ---
     _gradientController.dispose();
     _burstController.dispose();
     _nameController.dispose();
@@ -178,13 +175,19 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           FadeIn(
             delay: const Duration(milliseconds: 800),
             duration: const Duration(milliseconds: 500),
-            child: Row(children: [_buildThemeButton(), _buildLanguageButton()]),
+            child: Row(
+              children: [
+                _buildThemeButton(),
+                const SizedBox(width: 8),
+                _buildLanguageButton(),
+                const SizedBox(width: 8),
+              ],
+            ),
           ),
         ],
       ),
       body: Stack(
         children: [
-          // --- ✅ NEW: Using the exact same background as the login screen ---
           _buildAnimatedGradientBackground(),
           _buildCornerBurstEffect(),
           SafeArea(
@@ -196,7 +199,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
                   children: [
                     _buildTitles(l10n),
                     const SizedBox(height: 30),
-                    _buildGlassmorphicForm(context, l10n),
+                    _buildGlassmorphicForm(l10n),
                   ],
                 ),
               ),
@@ -207,26 +210,40 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
     );
   }
 
-  // --- ✅ NEW: Background widget copied directly from login screen ---
   Widget _buildAnimatedGradientBackground() {
-    return AnimatedBuilder(
-      animation: _gradientController,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(
-                -1.0 + (_gradientController.value * 2),
-                1.0 - (_gradientController.value * 2),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+        return AnimatedBuilder(
+          animation: _gradientController,
+          builder: (context, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: isDark
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF0D1B2A),
+                          const Color(0xFF415A77),
+                          const Color(0xFF000814),
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF004080),
+                          const Color(0xFF0066CC),
+                          const Color(0xFF4A90E2),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
               ),
-              radius: 1.5,
-              colors: [
-                AppColors.primaryColor.withValues(alpha: 0.7),
-                AppColors.background,
-              ],
-              stops: const [0.0, 1.0],
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -243,20 +260,18 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
         return ClipPath(
           clipper: _CircleClipper(
             radius: animation.value * MediaQuery.of(context).size.width * 1.5,
-            position: const Offset(double.infinity, 0), // Top-right corner
+            position: const Offset(double.infinity, 0),
           ),
           child: Container(
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
                   AppColors.goldenrod.withValues(alpha: 0.3),
-                  AppColors.primaryColor.withValues(
-                    alpha: 0.2,
-                  ), // Adjusted for consistency
+                  AppColors.primaryColor.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
-                center: const Alignment(1.0, -1.0), // Top-right corner
+                center: const Alignment(1.0, -1.0),
               ),
             ),
           ),
@@ -265,137 +280,161 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
     );
   }
 
-  // The rest of the file remains the same as your correct version
-  // ... (buildThemeButton, buildLanguageButton, buildTitles, etc.)
-
   Widget _buildThemeButton() {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, _) => IconButton(
-        icon: Icon(
-          themeProvider.themeMode == ThemeMode.dark
-              ? PhosphorIcons.sun
-              : PhosphorIcons.moon,
-          color: AppColors.textPrimary,
-        ),
-        onPressed: () => themeProvider.toggleTheme(
-          themeProvider.themeMode != ThemeMode.dark,
-        ),
-      ),
-    );
+    return const AnimatedThemeToggle();
   }
 
   Widget _buildLanguageButton() {
-    return Consumer<LocaleProvider>(
-      builder: (context, localeProvider, _) => IconButton(
-        icon: const Icon(PhosphorIcons.translate, color: AppColors.textPrimary),
-        onPressed: () => _showLanguagePicker(context, localeProvider),
-      ),
+    return Consumer2<LocaleProvider, ThemeProvider>(
+      builder: (context, localeProvider, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        return IconButton(
+          icon: Icon(
+            PhosphorIcons.translate,
+            color: isDark ? AppColors.textPrimary : Colors.white,
+          ),
+          onPressed: () => _showLanguagePicker(context, localeProvider),
+        );
+      },
     );
   }
 
   Widget _buildTitles(AppLocalizations l10n) {
-    return Column(
-      children: [
-        FadeInDown(
-          duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 800),
-          child: Text(
-            l10n.registerCreateAccount,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+        return Column(
+          children: [
+            FadeInDown(
+              duration: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 800),
+              child: Text(
+                l10n.registerCreateAccount,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: isDark ? AppColors.textPrimary : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        FadeInDown(
-          duration: const Duration(milliseconds: 600),
-          delay: const Duration(milliseconds: 1000),
-          child: Text(
-            l10n.registerGetStarted,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ),
-      ],
+            const SizedBox(height: 8),
+            FadeInDown(
+              duration: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 1000),
+              child: Text(
+                l10n.registerGetStarted,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: isDark ? AppColors.textSecondary : Colors.white70,
+                    ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildGlassmorphicForm(BuildContext context, AppLocalizations l10n) {
-    return FadeInUp(
-      delay: const Duration(milliseconds: 1200),
-      duration: const Duration(milliseconds: 600),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.borderColor.withValues(alpha: 0.5),
-              ),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildRegisterMethodSwitcher(l10n),
-                  const SizedBox(height: 24),
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.fastOutSlowIn,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) =>
-                          FadeTransition(opacity: animation, child: child),
-                      child: _selectedMethod == RegisterMethod.phone
-                          ? _buildPhoneForm(l10n)
-                          : _buildEmailForm(l10n),
-                    ),
+  Widget _buildGlassmorphicForm(AppLocalizations l10n) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+        return FadeInUp(
+          delay: const Duration(milliseconds: 1200),
+          duration: const Duration(milliseconds: 600),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1B263B).withValues(alpha: 0.7)
+                      : Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF00B4D8).withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 24),
-                  _buildSubmitButton(l10n),
-                  const SizedBox(height: 24),
-                  _buildLoginLink(l10n),
-                ],
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF00B4D8)
+                                .withValues(alpha: 0.2),
+                            blurRadius: 20,
+                            spreadRadius: -5,
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 20,
+                            spreadRadius: -5,
+                          ),
+                        ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildRegisterMethodSwitcher(l10n),
+                      const SizedBox(height: 24),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.fastOutSlowIn,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: _selectedMethod == RegisterMethod.phone
+                              ? _buildPhoneForm(l10n)
+                              : _buildEmailForm(l10n),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildSubmitButton(l10n),
+                      const SizedBox(height: 24),
+                      _buildLoginLink(l10n),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildRegisterMethodSwitcher(AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.background.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSwitcherButton(
-            l10n,
-            RegisterMethod.phone,
-            l10n.loginMethodPhone,
-            PhosphorIcons.phone,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF1B263B).withValues(alpha: 0.7)
+                : Colors.white.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(100),
+            border: isDark
+                ? Border.all(color: AppColors.neonCyan.withValues(alpha: 0.3))
+                : null,
           ),
-          _buildSwitcherButton(
-            l10n,
-            RegisterMethod.email,
-            l10n.loginMethodEmail,
-            PhosphorIcons.envelopeSimple,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSwitcherButton(l10n, RegisterMethod.phone, l10n.loginMethodPhone, PhosphorIcons.phone, isDark),
+              _buildSwitcherButton(l10n, RegisterMethod.email, l10n.loginMethodEmail, PhosphorIcons.envelopeSimple, isDark),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -404,6 +443,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
     RegisterMethod method,
     String label,
     IconData icon,
+    bool isDark,
   ) {
     final isSelected = _selectedMethod == method;
     return GestureDetector(
@@ -418,7 +458,9 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.goldenrod : Colors.transparent,
+          color: isSelected
+              ? (isDark ? AppColors.sunsetOrange : const Color(0xFF004080))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
@@ -426,14 +468,22 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             Icon(
               icon,
               size: 20,
-              color: isSelected ? Colors.black : AppColors.textSecondary,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark
+                      ? AppColors.textSecondary
+                      : const Color(0xFF004080)),
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.black : AppColors.textSecondary,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark
+                        ? AppColors.textSecondary
+                        : const Color(0xFF004080)),
               ),
             ),
           ],
@@ -472,26 +522,17 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           ],
         ),
       ),
-              validator: (v) {
-            final value = v?.trim();
-            if (value == null || value.isEmpty) {
-              return l10n.errorEnterPhoneNumber;
-            }
-
-            // This single regex validates all valid Ethiopian mobile formats:
-            // ^         - Start of the string.
-            // (0?9\d{8}) - Group 1: Optional '0', must be followed by '9' and 8 digits (Ethio Telecom).
-            // |         - OR
-            // (0?7\d{8}) - Group 2: Optional '0', must be followed by '7' and 8 digits (Safaricom).
-            // $         - End of the string.
-            final ethiopianPhoneRegex = RegExp(r'^(0?9\d{8}|0?7\d{8})$');
-
-            if (!ethiopianPhoneRegex.hasMatch(value)) {
-              return l10n.errorEnterPhoneNumber; // "Please enter a valid Ethio Telecom or Safaricom number."
-            }
-            
-            return null; // The number is valid.
-          },
+      validator: (v) {
+        final value = v?.trim();
+        if (value == null || value.isEmpty) {
+          return l10n.errorEnterPhoneNumber;
+        }
+        final ethiopianPhoneRegex = RegExp(r'^(0?9\d{8}|0?7\d{8})$');
+        if (!ethiopianPhoneRegex.hasMatch(value)) {
+          return l10n.errorInvalidPhoneNumber;
+        }
+        return null;
+      },
     );
   }
 
@@ -544,27 +585,14 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return l10n.errorEnterPassword; // "Please enter a password"
+              return l10n.errorEnterPassword;
             }
-
-            // This single, powerful regex checks for all conditions at once.
-            // - (?=.*[a-z]):  Ensures at least one lowercase letter.
-            // - (?=.*[A-Z]):  Ensures at least one uppercase letter.
-            // - (?=.*\d):     Ensures at least one digit.
-            // - (?=.*[^\da-zA-Z]): Ensures at least one special character.
-            // - .{6,}:        Ensures a minimum length of 6 characters.
-            // - ^...$:        Ensures the string starts and ends without spaces.
             final passwordRegex = RegExp(
               r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$',
             );
-
             if (!passwordRegex.hasMatch(value)) {
-              // Return a single, comprehensive error message explaining all rules.
-              return l10n
-                  .errorEnterPassword; // e.g., "Use 6+ chars with upper, lower, number & symbol."
+              return l10n.errorPasswordInvalid;
             }
-
-            // If the regex passes, the password is valid.
             return null;
           },
         ),
@@ -573,50 +601,101 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
   }
 
   Widget _buildSubmitButton(AppLocalizations l10n) {
-    return SizedBox(
-      width: double.infinity,
-      child: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.goldenrod),
-            )
-          : ElevatedButton(
-              onPressed: _handleRegister,
-              child: Text(
-                _selectedMethod == RegisterMethod.phone
-                    ? l10n.sendOtpButton
-                    : l10n.registerButton,
-              ),
-            ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+        return SizedBox(
+          width: double.infinity,
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: isDark ? AppColors.sunsetOrange : Colors.white,
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? [
+                              AppColors.sunsetOrange,
+                              AppColors.sunsetOrange.withValues(alpha: 0.8)
+                            ]
+                          : [const Color(0xFF004080), const Color(0xFF0066CC)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? AppColors.sunsetOrange.withValues(alpha: 0.3)
+                            : const Color(0xFF004080).withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    onPressed: _handleRegister,
+                    child: Text(
+                      _selectedMethod == RegisterMethod.phone
+                          ? l10n.sendOtpButton
+                          : l10n.registerButton,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 
   Widget _buildLoginLink(AppLocalizations l10n) {
-    return FadeInUp(
-      delay: const Duration(milliseconds: 1400),
-      duration: const Duration(milliseconds: 600),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            l10n.registerHaveAccount,
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const PassengerLoginScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+        return FadeInUp(
+          delay: const Duration(milliseconds: 1400),
+          duration: const Duration(milliseconds: 600),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n.registerHaveAccount,
+                style: TextStyle(
+                  color: isDark ? AppColors.textSecondary : Colors.white70,
+                ),
               ),
-            ),
-            child: Text(
-              l10n.signInButton,
-              style: const TextStyle(
-                color: AppColors.goldenrod,
-                fontWeight: FontWeight.bold,
+              TextButton(
+                onPressed: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const PassengerLoginScreen(),
+                  ),
+                ),
+                child: Text(
+                  l10n.signInButton,
+                  style: TextStyle(
+                    color: isDark ? AppColors.sunsetOrange : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -686,8 +765,9 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
         return code;
     }
   }
-}
+} // ✅ --- THIS IS THE CRUCIAL MISSING BRACE ---
 
+// ✅ --- This class now correctly lives outside the State class ---
 class _CircleClipper extends CustomClipper<Path> {
   final double radius;
   final Offset position;

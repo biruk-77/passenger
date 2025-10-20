@@ -1,7 +1,9 @@
 // lib/widgets/glowing_text_field.dart
 
 import 'package:flutter/material.dart';
-import '../theme/color.dart'; // Ensure this path is correct
+import 'package:provider/provider.dart';
+import '../theme/color.dart';
+import '../providers/theme_provider.dart';
 
 class GlowingTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -105,7 +107,11 @@ class _GlowingTextFieldState extends State<GlowingTextField>
 
   @override
   Widget build(BuildContext context) {
-    return FormField<String>(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        final isDark = themeProvider.themeMode == ThemeMode.dark;
+        
+        return FormField<String>(
       key: _formFieldKey,
       initialValue: widget.controller.text,
       validator: (value) {
@@ -116,11 +122,11 @@ class _GlowingTextFieldState extends State<GlowingTextField>
         return error;
       },
       builder: (field) {
-        final hasError = _errorText != null && _errorText!.isNotEmpty;
-        final glowColor = hasError
-            ? AppColors.brightRed
-            : AppColors.accentColor;
-        final bool isEffectivelyReadOnly = widget.isReadOnly;
+          final hasError = _errorText != null && _errorText!.isNotEmpty;
+          final glowColor = hasError
+              ? AppColors.brightRed
+              : (isDark ? AppColors.neonCyan : const Color(0xFF004080)); // Grace's blue for light mode
+          final bool isEffectivelyReadOnly = widget.isReadOnly;
 
         return AnimatedBuilder(
           animation: _animationController,
@@ -149,15 +155,17 @@ class _GlowingTextFieldState extends State<GlowingTextField>
             readOnly: isEffectivelyReadOnly,
             style: TextStyle(
               color: isEffectivelyReadOnly
-                  ? AppColors.textSecondary
-                  : AppColors.textPrimary,
+                  ? (isDark ? AppColors.textSecondary : const Color(0xFF004080))
+                  : (isDark ? AppColors.textPrimary : const Color(0xFF004080)), // Grace's blue text
               fontSize: 16,
             ),
             obscureText: widget.isObscured,
             keyboardType: widget.keyboardType,
             decoration: InputDecoration(
               hintText: widget.hintText,
-              hintStyle: const TextStyle(color: AppColors.textSecondary),
+              hintStyle: TextStyle(
+                color: isDark ? AppColors.textSecondary : const Color(0xFF004080).withValues(alpha: 0.7),
+              ),
               prefixIcon:
                   widget.prefixWidget ??
                   (widget.icon != null
@@ -175,9 +183,13 @@ class _GlowingTextFieldState extends State<GlowingTextField>
                       : null),
               suffixIcon: widget.suffixIcon,
               filled: true,
-              fillColor: isEffectivelyReadOnly
-                  ? Colors.black.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.4),
+              fillColor: isDark
+                  ? (isEffectivelyReadOnly
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.4))
+                  : (isEffectivelyReadOnly
+                      ? Colors.white.withValues(alpha: 0.7)
+                      : Colors.white.withValues(alpha: 0.9)), // White background for Grace's blue theme
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 20,
                 horizontal: 20,
@@ -185,37 +197,48 @@ class _GlowingTextFieldState extends State<GlowingTextField>
               enabledBorder: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(100)),
                 borderSide: BorderSide(
-                  color: isEffectivelyReadOnly
-                      ? AppColors.borderColor.withValues(alpha: 0.5)
-                      : AppColors.borderColor,
+                  color: isDark
+                      ? (isEffectivelyReadOnly
+                          ? AppColors.borderColor.withValues(alpha: 0.5)
+                          : AppColors.borderColor)
+                      : const Color(0xFF004080).withValues(alpha: 0.3), // Grace's blue border
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(100)),
                 borderSide: BorderSide(
-                  color: isEffectivelyReadOnly
-                      ? AppColors.borderColor.withValues(alpha: 0.5)
-                      : AppColors.borderColor,
+                  color: isDark
+                      ? (isEffectivelyReadOnly
+                          ? AppColors.borderColor.withValues(alpha: 0.5)
+                          : AppColors.borderColor)
+                      : const Color(0xFF004080), // Grace's blue focused border
                   width: 2,
                 ),
               ),
-              errorBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-                borderSide: BorderSide(color: AppColors.borderColor),
+              errorBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(100)),
+                borderSide: BorderSide(
+                  color: isDark ? AppColors.borderColor : AppColors.brightRed,
+                ),
               ),
-              focusedErrorBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-                borderSide: BorderSide(color: AppColors.borderColor, width: 2),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(100)),
+                borderSide: BorderSide(
+                  color: isDark ? AppColors.borderColor : AppColors.brightRed,
+                  width: 2,
+                ),
               ),
-              errorStyle: const TextStyle(
-                color: AppColors.goldenrod,
+              errorStyle: TextStyle(
+                color: isDark ? AppColors.goldenrod : AppColors.brightRed,
                 fontWeight: FontWeight.w500,
                 fontSize: 13,
               ),
               errorText: field.errorText,
             ),
           ),
-        );
+          );
+        },
+      );
       },
     );
   }

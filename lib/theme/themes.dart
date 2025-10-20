@@ -3,25 +3,23 @@ import 'package:flutter/material.dart';
 import 'color.dart'; // Import your AppColors class
 
 class AppThemes {
-  /// --- DARK THEME (UPDATED TO MATCH LOGO) ---
+  /// --- DARK THEME ("NIGHT SESSION") - Windsurfing at Night ---
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    fontFamily: 'Poppins', // Using Poppins as a modern default
-    primaryColor: AppColors.primaryColor,
-    scaffoldBackgroundColor:
-        AppColors.background, // Use the new dark blue background
+    fontFamily: 'Poppins',
+    primaryColor: AppColors.primaryColor, // Ocean blue
+    scaffoldBackgroundColor: AppColors.nightBackground, // Deep ocean background
 
-    colorScheme: const ColorScheme.dark(
-      primary:
-          AppColors.goldenrod, // Goldenrod remains the primary action color
-      secondary: AppColors.accentColor,
-      surface: AppColors
-          .cardBackground, // Cards will have the lighter blue-grey color
+    colorScheme: ColorScheme.dark(
+      primary: AppColors.sunsetOrange, // Sunset orange for night actions
+      secondary: AppColors.neonCyan, // Neon cyan accents
+      surface: AppColors.nightCardBackground,
       onPrimary: Colors.black,
       onSecondary: AppColors.textPrimary,
       onSurface: AppColors.textPrimary,
       error: AppColors.error,
       onError: Colors.black,
+      background: AppColors.nightBackground,
     ),
 
     appBarTheme: const AppBarTheme(
@@ -90,22 +88,22 @@ class AppThemes {
     ),
   );
 
-  /// --- LIGHT THEME ---
-  /// A professional light theme that complements your brand colors.
+  /// --- LIGHT THEME ("DAY SESSION") - Windsurfing in Daylight ---
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     fontFamily: 'Poppins',
-    primaryColor: Colors.white,
-    scaffoldBackgroundColor: const Color(0xFFF4F6F8),
-    colorScheme: const ColorScheme.light(
-      primary: AppColors.goldenrod,
-      secondary: AppColors.primaryColor, // Will now use the new primary color
-      surface: Colors.white,
+    primaryColor: AppColors.dayWater,
+    scaffoldBackgroundColor: AppColors.dayBackground,
+    colorScheme: ColorScheme.light(
+      primary: AppColors.coralRed, // Coral red for day actions
+      secondary: AppColors.sunYellow, // Sun yellow accents
+      surface: AppColors.dayCardBackground,
       onPrimary: Colors.black,
-      onSecondary: Colors.white,
+      onSecondary: Colors.black,
       onSurface: Colors.black87,
       error: AppColors.error,
       onError: Colors.white,
+      background: AppColors.dayBackground,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,
