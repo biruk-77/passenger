@@ -1066,7 +1066,6 @@ class _PremiumEmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
-    this.action,
   });
 
   @override

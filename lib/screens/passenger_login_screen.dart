@@ -14,6 +14,7 @@ import '../theme/color.dart';
 import '../theme/styles.dart';
 import '../widgets/glowing_text_field.dart';
 import '../widgets/animated_theme_toggle.dart';
+import '../widgets/theme_transition_animation.dart';
 import 'otp_verification_screen.dart';
 import '../services/auth_service.dart';
 import 'passenger_register_screen_fixed.dart';
@@ -202,7 +203,8 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return ThemeTransitionAnimation(
+      child: Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -246,6 +248,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -269,8 +272,8 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withValues(alpha: 0.3),
-                  AppColors.primaryColor.withValues(alpha: 0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.2),
+                  AppColors.primaryColor.withValues(alpha: 0.15),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -295,26 +298,28 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               decoration: BoxDecoration(
                 gradient: isDark
                     ? LinearGradient(
-                        // "Twilight Sail" - Deep indigo night sky to dark ocean
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        // Beautiful Dark Mode - Deep golden/amber theme
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF0D1B2A), // Dark indigo night sky
-                          const Color(0xFF415A77), // Mid-tone transition
-                          const Color(0xFF000814), // Near-black ocean
+                          const Color(0xFF1A1A1A), // Deep black
+                          const Color(0xFF2D2D2D), // Dark gray
+                          const Color(0xFF1F1F1F), // Charcoal
+                          const Color(0xFF0F0F0F), // Almost black
                         ],
-                        stops: const [0.0, 0.6, 1.0],
+                        stops: const [0.0, 0.3, 0.7, 1.0],
                       )
                     : LinearGradient(
-                        // Grace's Light Mode - BY Grace: #004080
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        // Enhanced Light Mode - Professional blue gradient
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF004080), // BY Grace: rgba(0, 64, 128)
-                          const Color(0xFF0066CC), // Lighter transition
-                          const Color(0xFF4A90E2), // Softer blue
+                          const Color(0xFF1565C0), // Deep blue
+                          const Color(0xFF1976D2), // Material blue
+                          const Color(0xFF42A5F5), // Light blue
+                          const Color(0xFF64B5F6), // Lighter blue
                         ],
-                        stops: const [0.0, 0.5, 1.0],
+                        stops: const [0.0, 0.3, 0.7, 1.0],
                       ),
               ),
             );
@@ -335,7 +340,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
         return IconButton(
           icon: Icon(
             PhosphorIcons.translate, 
-            color: isDark ? AppColors.textPrimary : Colors.white, // White icon on Grace's blue
+            color: isDark ? AppColors.textPrimary : Colors.white.withValues(alpha: 0.9), // Slightly transparent white
           ),
           onPressed: () => _showLanguagePicker(context, localeProvider),
         );
@@ -356,7 +361,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               child: Text(
                 l10n.loginWelcomeBack,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: isDark ? AppColors.textPrimary : Colors.white, // White text on Grace's blue
+                  color: isDark ? AppColors.textPrimary : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -368,7 +373,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               child: Text(
                 l10n.signInButton,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: isDark ? AppColors.textSecondary : Colors.white70, // Light white text on Grace's blue
+                  color: isDark ? AppColors.textSecondary : Colors.white.withValues(alpha: 0.85),
                 ),
               ),
             ),
@@ -394,27 +399,42 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFFFFB500).withValues(alpha: 0.8) // Yellow men with frosted glass
-                      : Colors.black.withValues(alpha: 0.9), // More opaque white for Grace's blue background
+                      ? const Color(0xFF2D2D2D).withValues(alpha: 0.95) // Dark gray container
+                      : Colors.white.withValues(alpha: 0.95), // Clean white with high opacity
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF00B4D8).withValues(alpha: 0.3) // Neon Cyan glow border
-                        : Colors.black.withValues(alpha: 0.5), // Soft white border
+                        ? AppColors.goldenrod.withValues(alpha: 0.4) // Soft golden glow border
+                        : Colors.white.withValues(alpha: 0.3), // Subtle white border
+                    width: 1.5,
                   ),
                   boxShadow: isDark
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF00B4D8).withValues(alpha: 0.2), // Neon Cyan glow
-                            blurRadius: 20,
-                            spreadRadius: -5,
+                            color: AppColors.goldenrod.withValues(alpha: 0.15), // Soft golden glow
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 8),
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            spreadRadius: -8,
+                            offset: const Offset(0, 4),
                           ),
                         ]
                       : [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05), // Soft diffused shadow
-                            blurRadius: 20,
-                            spreadRadius: -5,
+                            color: Colors.black.withValues(alpha: 0.1), // Subtle shadow
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 8),
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 16,
+                            spreadRadius: -8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                 ),
@@ -462,11 +482,11 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
         return Container(
           decoration: BoxDecoration(
             color: isDark 
-                ? const Color(0xFF1B263B).withValues(alpha: 0.7)
-                : Colors.white.withValues(alpha: 0.9), // More opaque for Grace's blue
+                ? const Color(0xFF1F1F1F).withValues(alpha: 0.8) // Dark charcoal
+                : Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(100),
             border: isDark 
-                ? Border.all(color: AppColors.neonCyan.withValues(alpha: 0.3))
+                ? Border.all(color: AppColors.goldenrod.withValues(alpha: 0.3))
                 : null,
           ),
           child: Row(
@@ -514,7 +534,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected 
-              ? (isDark ? AppColors.sunsetOrange : const Color(0xFF004080)) // Grace's blue for selected
+              ? (isDark ? AppColors.goldenrod : const Color(0xFF004080))
               : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
@@ -524,8 +544,8 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               icon,
               size: 20,
               color: isSelected 
-                  ? Colors.white
-                  : (isDark ? AppColors.textSecondary : const Color(0xFF004080)), // Grace's blue for unselected
+                  ? (isDark ? Colors.black : Colors.white)
+                  : (isDark ? AppColors.textSecondary : const Color(0xFF004080)),
             ),
             const SizedBox(width: 8),
             Text(
@@ -533,8 +553,8 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isSelected 
-                    ? Colors.white
-                    : (isDark ? AppColors.textSecondary : const Color(0xFF004080)), // Grace's blue for unselected
+                    ? (isDark ? Colors.black : Colors.white)
+                    : (isDark ? AppColors.textSecondary : const Color(0xFF004080)),
               ),
             ),
           ],
@@ -656,7 +676,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
           child: _isLoading
               ? Center(
                   child: CircularProgressIndicator(
-                    color: isDark ? AppColors.sunsetOrange : Colors.white, // White loading indicator on Grace's blue
+                    color: isDark ? AppColors.goldenrod : Colors.white,
                   ),
                 )
               : Container(
@@ -664,14 +684,14 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
                     borderRadius: BorderRadius.circular(12),
                     gradient: LinearGradient(
                       colors: isDark
-                          ? [AppColors.sunsetOrange, AppColors.sunsetOrange.withValues(alpha: 0.8)]
-                          : [const Color(0xFF004080), const Color(0xFF0066CC)], // Grace's blue gradient
+                          ? [AppColors.goldenrod, AppColors.goldenrod.withValues(alpha: 0.8)]
+                          : [const Color(0xFF004080), const Color(0xFF0066CC)],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isDark
-                            ? AppColors.sunsetOrange.withValues(alpha: 0.3)
-                            : const Color(0xFF004080).withValues(alpha: 0.3), // Grace's blue shadow
+                            ? AppColors.goldenrod.withValues(alpha: 0.3)
+                            : const Color(0xFF004080).withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -718,7 +738,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
               Text(
                 l10n.dontHaveAccount,
                 style: TextStyle(
-                  color: isDark ? AppColors.textSecondary : Colors.white70, // White text on Grace's blue
+                  color: isDark ? AppColors.textSecondary : Colors.black54, // Dark text for light mode
                 ),
               ),
               TextButton(
@@ -730,7 +750,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
                 child: Text(
                   l10n.register,
                   style: TextStyle(
-                    color: isDark ? AppColors.sunsetOrange : Colors.white, // White text on Grace's blue
+                    color: isDark ? AppColors.goldenrod : const Color(0xFF004080), // Blue for light mode
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -764,7 +784,7 @@ class _PassengerLoginScreenState extends State<PassengerLoginScreen>
             label: Text(
               l10n.smsOfflineLogin,
               style: TextStyle(
-                color: isDark ? AppColors.textSecondary : Colors.white70, // White text on Grace's blue
+                color: isDark ? AppColors.textSecondary : Colors.white70,
               ),
             ),
             style: TextButton.styleFrom(

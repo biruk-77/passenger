@@ -231,6 +231,8 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  bool _hasShownSplash = false;
+  
   @override
   void initState() {
     super.initState();
@@ -261,14 +263,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return StreamBuilder<AuthStatus>(
       stream: authService.authStatusStream,
       builder: (context, snapshot) {
-        // --- THIS IS THE CORRECTED LOGIC ---
-
-        // Step 1: Check if the connection is waiting (loading).
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        // Step 1: Check if the connection is waiting (loading) and we haven't shown splash yet
+        if (snapshot.connectionState == ConnectionState.waiting && !_hasShownSplash) {
+          _hasShownSplash = true;
           return const Center(child: VideoSplashScreen());
         }
 
-        // Step 3: If it's NOT waiting, the rest of the code will run.
+        // Step 2: If we have data, process the auth status
         setL10n(AppLocalizations.of(context)!);
         if (snapshot.hasData) {
           final authStatus = snapshot.data!;
@@ -280,10 +281,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
               return const CompleteProfileScreen();
             case AuthStatus.unauthenticated:
             case AuthStatus.unknown:
+              // Show splash screen only for first-time unauthenticated users
+              if (!_hasShownSplash) {
+                _hasShownSplash = true;
+                return const Center(child: VideoSplashScreen());
+              }
               return const PassengerLoginScreen();
-        
           }
+        }
 
+        // Step 3: If no data yet and we haven't shown splash, show it
+        if (!_hasShownSplash) {
+          _hasShownSplash = true;
+          return const Center(child: VideoSplashScreen());
         }
 
         // As a fallback, show the login screen.

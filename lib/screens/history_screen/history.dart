@@ -724,7 +724,7 @@ class _StatusChip extends StatelessWidget {
 
 class _LoadingIndicator extends StatelessWidget {
   final double size;
-  const _LoadingIndicator({this.size = 30.0});
+  const _LoadingIndicator();
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(

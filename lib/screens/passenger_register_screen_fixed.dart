@@ -14,6 +14,7 @@ import '../theme/color.dart';
 import '../theme/styles.dart';
 import '../widgets/glowing_text_field.dart';
 import '../widgets/animated_theme_toggle.dart';
+import '../widgets/theme_transition_animation.dart';
 import 'otp_verification_screen.dart';
 import '../services/auth_service.dart';
 import 'passenger_login_screen.dart';
@@ -165,47 +166,49 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          FadeIn(
-            delay: const Duration(milliseconds: 800),
-            duration: const Duration(milliseconds: 500),
-            child: Row(
-              children: [
-                _buildThemeButton(),
-                const SizedBox(width: 8),
-                _buildLanguageButton(),
-                const SizedBox(width: 8),
-              ],
+    return ThemeTransitionAnimation(
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          actions: [
+            FadeIn(
+              delay: const Duration(milliseconds: 800),
+              duration: const Duration(milliseconds: 500),
+              child: Row(
+                children: [
+                  _buildThemeButton(),
+                  const SizedBox(width: 8),
+                  _buildLanguageButton(),
+                  const SizedBox(width: 8),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          _buildAnimatedGradientBackground(),
-          _buildCornerBurstEffect(),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildTitles(l10n),
-                    const SizedBox(height: 30),
-                    _buildGlassmorphicForm(l10n),
-                  ],
+          ],
+        ),
+        body: Stack(
+          children: [
+            _buildAnimatedGradientBackground(),
+            _buildCornerBurstEffect(),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildTitles(l10n),
+                      const SizedBox(height: 30),
+                      _buildGlassmorphicForm(l10n),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -222,24 +225,27 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               decoration: BoxDecoration(
                 gradient: isDark
                     ? LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        // Beautiful Dark Mode - Deep golden/amber theme
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF0D1B2A),
-                          const Color(0xFF415A77),
-                          const Color(0xFF000814),
+                          const Color(0xFF1A1A1A), // Deep black
+                          const Color(0xFF2D2D2D), // Dark gray
+                          const Color(0xFF1F1F1F), // Charcoal
+                          const Color(0xFF0F0F0F), // Almost black
                         ],
-                        stops: const [0.0, 0.6, 1.0],
+                        stops: const [0.0, 0.3, 0.7, 1.0],
                       )
                     : LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFF004080),
-                          const Color(0xFF0066CC),
-                          const Color(0xFF4A90E2),
+                          const Color(0xFF1565C0),
+                          const Color(0xFF1976D2),
+                          const Color(0xFF42A5F5),
+                          const Color(0xFF64B5F6),
                         ],
-                        stops: const [0.0, 0.5, 1.0],
+                        stops: const [0.0, 0.3, 0.7, 1.0],
                       ),
               ),
             );
@@ -266,8 +272,8 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  AppColors.goldenrod.withValues(alpha: 0.3),
-                  AppColors.primaryColor.withValues(alpha: 0.2),
+                  AppColors.goldenrod.withValues(alpha: 0.2),
+                  AppColors.primaryColor.withValues(alpha: 0.15),
                   Colors.transparent,
                 ],
                 stops: const [0.0, 0.4, 1.0],
@@ -326,7 +332,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
                 l10n.registerGetStarted,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isDark ? AppColors.textSecondary : Colors.white70,
+                      color: isDark ? AppColors.textSecondary : Colors.white.withValues(alpha: 0.85),
                     ),
               ),
             ),
@@ -352,28 +358,42 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF1B263B).withValues(alpha: 0.7)
-                      : Colors.white.withValues(alpha: 0.9),
+                      ? const Color(0xFF2D2D2D).withValues(alpha: 0.95) // Dark gray container
+                      : Colors.white.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF00B4D8).withValues(alpha: 0.3)
-                        : Colors.white.withValues(alpha: 0.5),
+                        ? AppColors.goldenrod.withValues(alpha: 0.4) // Soft golden glow border
+                        : Colors.white.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
                   boxShadow: isDark
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF00B4D8)
-                                .withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            spreadRadius: -5,
+                            color: AppColors.goldenrod.withValues(alpha: 0.15), // Soft golden glow
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 8),
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            spreadRadius: -8,
+                            offset: const Offset(0, 4),
                           ),
                         ]
                       : [
                           BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 8),
+                          ),
+                          BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 20,
-                            spreadRadius: -5,
+                            blurRadius: 16,
+                            spreadRadius: -8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                 ),
@@ -415,16 +435,16 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         final isDark = themeProvider.themeMode == ThemeMode.dark;
-        
+
         return Container(
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF1B263B).withValues(alpha: 0.7)
+                ? const Color(0xFF1F1F1F).withValues(alpha: 0.8) // Dark charcoal
                 : Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(100),
             border: isDark
-                ? Border.all(color: AppColors.neonCyan.withValues(alpha: 0.3))
-                : null,
+                ? Border.all(color: AppColors.goldenrod.withValues(alpha: 0.3))
+                : Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -459,7 +479,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? AppColors.sunsetOrange : const Color(0xFF004080))
+              ? (isDark ? AppColors.goldenrod : const Color(0xFF004080))
               : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
@@ -469,10 +489,8 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               icon,
               size: 20,
               color: isSelected
-                  ? Colors.white
-                  : (isDark
-                      ? AppColors.textSecondary
-                      : const Color(0xFF004080)),
+                  ? (isDark ? Colors.black : Colors.white)
+                  : (isDark ? AppColors.textSecondary : const Color(0xFF004080)),
             ),
             const SizedBox(width: 8),
             Text(
@@ -480,10 +498,8 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isSelected
-                    ? Colors.white
-                    : (isDark
-                        ? AppColors.textSecondary
-                        : const Color(0xFF004080)),
+                    ? (isDark ? Colors.black : Colors.white)
+                    : (isDark ? AppColors.textSecondary : const Color(0xFF004080)),
               ),
             ),
           ],
@@ -591,7 +607,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$',
             );
             if (!passwordRegex.hasMatch(value)) {
-              return l10n.errorPasswordInvalid;
+              return l10n.registerErrorEnterConfirmPassword;
             }
             return null;
           },
@@ -610,7 +626,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
           child: _isLoading
               ? Center(
                   child: CircularProgressIndicator(
-                    color: isDark ? AppColors.sunsetOrange : Colors.white,
+                    color: isDark ? AppColors.goldenrod : Colors.white,
                   ),
                 )
               : Container(
@@ -618,16 +634,13 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
                     borderRadius: BorderRadius.circular(12),
                     gradient: LinearGradient(
                       colors: isDark
-                          ? [
-                              AppColors.sunsetOrange,
-                              AppColors.sunsetOrange.withValues(alpha: 0.8)
-                            ]
+                          ? [AppColors.goldenrod, AppColors.goldenrod.withValues(alpha: 0.8)]
                           : [const Color(0xFF004080), const Color(0xFF0066CC)],
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isDark
-                            ? AppColors.sunsetOrange.withValues(alpha: 0.3)
+                            ? AppColors.goldenrod.withValues(alpha: 0.3)
                             : const Color(0xFF004080).withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
@@ -675,7 +688,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
               Text(
                 l10n.registerHaveAccount,
                 style: TextStyle(
-                  color: isDark ? AppColors.textSecondary : Colors.white70,
+                  color: isDark ? AppColors.textSecondary : Colors.black54, // Dark text for light mode
                 ),
               ),
               TextButton(
@@ -687,7 +700,7 @@ class _PassengerRegisterScreenState extends State<PassengerRegisterScreen>
                 child: Text(
                   l10n.signInButton,
                   style: TextStyle(
-                    color: isDark ? AppColors.sunsetOrange : Colors.white,
+                    color: isDark ? AppColors.goldenrod : const Color(0xFF004080), // Blue for light mode
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -2156,7 +2156,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _navigateToSearchScreen({LatLng? initialStartPoint}) {
+  void _navigateToSearchScreen() {
     _nearbyDriverSimulatorManager?.stop(); // Stop simulation when searching
     // Instead of navigating, we change the state to show the SearchPanel.
     setState(() {
@@ -2354,7 +2354,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _showErrorSnackBar("Failed to confirm dropoff. Please try again.");
       Logger.error("HomeScreen", "Error confirming contract dropoff", e);
     }
-     _resetMapState();
+    _resetMapState();
   }
 
   Future<void> _planOrUpdateRoute(
@@ -4130,7 +4130,6 @@ class _RideBookingPanelContent extends StatelessWidget {
 
   // ✅ CORRECTED CONSTRUCTOR
   const _RideBookingPanelContent({
-    super.key,
     required this.scrollController,
     required this.mapState,
     required this.onSearchTap,
@@ -4149,7 +4148,6 @@ class _RideBookingPanelContent extends StatelessWidget {
     required this.selectedRideIndex,
     required this.onVehicleSelected,
     this.driverDetails,
-    this.bookingDetails,
     this.activeBooking,
     this.vehicleDetails,
     required this.onCancelRide,
@@ -4191,7 +4189,6 @@ class _RideBookingPanelContent extends StatelessWidget {
     this.selectedSubscription,
     required this.onCreateNewSubscription, // ✅ ADD
     required this.onSelectNewContractType,
-    this.activeContractBooking,
     required this.contractPickStage,
     this.etaToDestination,
     required this.isContractTripOngoing,

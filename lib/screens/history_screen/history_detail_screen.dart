@@ -324,7 +324,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 class _DetailSection extends StatelessWidget {
   final String title;
   final Widget child;
-  const _DetailSection({super.key, required this.title, required this.child});
+  const _DetailSection({required this.title, required this.child});
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -351,7 +351,6 @@ class _AddressRow extends StatelessWidget {
   final Color color;
   final String address;
   const _AddressRow({
-    super.key,
     required this.icon,
     required this.color,
     required this.address,
