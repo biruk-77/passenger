@@ -84,7 +84,7 @@ class _DiscoveryPanelContentState extends State<DiscoveryPanelContent>
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.background.withValues(alpha: 0.25),
+                color: theme.colorScheme.surface.withValues(alpha: 0.25),
                 border: Border.all(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 ),
@@ -1066,6 +1066,7 @@ class _PremiumEmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
+    this.action,
   });
 
   @override
@@ -1201,7 +1202,7 @@ class _PremiumConfirmationDialog extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.surface, theme.colorScheme.background],
+            colors: [theme.colorScheme.surface, theme.colorScheme.surface],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

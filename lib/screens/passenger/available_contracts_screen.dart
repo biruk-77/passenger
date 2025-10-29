@@ -8,8 +8,6 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/contract/contract_ride.dart';
 import '../../services/api_service.dart';
-import '../../theme/color.dart';
-import '../../theme/styles.dart';
 
 class AvailableContractsScreen extends StatefulWidget {
   const AvailableContractsScreen({super.key});

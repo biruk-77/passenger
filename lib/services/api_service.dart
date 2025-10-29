@@ -22,7 +22,6 @@ import '../models/active_booking_state.dart';
 import '../models/booking.dart';
 import '../models/booking_progress.dart';
 import '../models/contract/contract_ride.dart';
-import '../models/contract/driver.dart' hide AssignedDriver;
 import '../models/passenger.dart';
 
 import '../models/pricing_rule.dart';
@@ -31,7 +30,6 @@ import '../models/route.dart';
 import '../models/contract/trip.dart';
 import '../models/vehicle_type.dart';
 import '../models/wallet_transaction.dart';
-import '../models/contract/contract_booking.dart';
 import '../models/payments/payment_partner.dart'; // <--- NEWLY CREATED
 import '../models/payments/payment_option.dart'; // <--- NEWLY CREATED
 import '../models/contract/trip_schedule_item.dart';

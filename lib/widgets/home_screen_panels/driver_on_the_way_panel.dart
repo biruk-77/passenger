@@ -200,7 +200,7 @@ class _DriverOnTheWayPanelContentState extends State<DriverOnTheWayPanelContent>
               radius: 1.5,
               colors: [
                 theme.colorScheme.secondary.withValues(alpha: 0.7),
-                theme.colorScheme.background,
+                theme.colorScheme.surface,
               ],
               stops: const [0.0, 1.0],
             ),

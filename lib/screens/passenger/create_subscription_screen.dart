@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 
-import '../../models/contract/contract_ride.dart';
 import '../../services/api_service.dart';
 import '../../utils/logger.dart';
 import '../../theme/color.dart'; // Import your app colors

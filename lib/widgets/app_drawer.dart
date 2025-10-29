@@ -1,6 +1,5 @@
 // FILE: lib/widgets/app_drawer.dart
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,10 +11,8 @@ import '../theme/color.dart';
 import '../models/passenger.dart';
 import '../screens/passenger/my_subscriptions_screen.dart';
 import '../screens/passenger/available_contracts_screen.dart';
-import '../screens/payment_screen.dart';
 import '../screens/my_transactions_screen.dart';
 import '../screens/my_trips_screen.dart';
-import '../screens/passenger/pending_subscriptions_screen.dart';
 
 /// The "Genesis Grid Drawer".
 /// An executive-class drawer featuring a highly interactive, illuminated grid,

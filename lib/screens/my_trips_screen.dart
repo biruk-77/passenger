@@ -14,7 +14,6 @@ import '../../theme/color.dart';
 import '../../theme/styles.dart';
 
 // STEP 1: animate_do import added for consistency, though not used in background helpers
-import 'package:animate_do/animate_do.dart';
 
 class MyTripsScreen extends StatefulWidget {
   const MyTripsScreen({super.key});

@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/route_details.dart';
 import '../models/location.dart';
-import '../models/search_result.dart';
 
 // --- Custom Data Models for Richer Information ---
 

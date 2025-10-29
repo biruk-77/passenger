@@ -8,7 +8,6 @@ import 'package:dio/dio.dart';
 import '../models/ride_history.dart';
 import '../services/api_service.dart';
 import '../services/google_maps_service.dart';
-import '../utils/api_exception.dart';
 import 'package:flutter/foundation.dart'; // Add this for debugPrint
 
 // ... HistoryTabData class remains the same ...

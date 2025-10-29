@@ -19,7 +19,6 @@ class AppThemes {
       onSurface: AppColors.textPrimary,
       error: AppColors.error,
       onError: Colors.black,
-      background: AppColors.nightBackground,
     ),
 
     appBarTheme: const AppBarTheme(
@@ -103,7 +102,6 @@ class AppThemes {
       onSurface: Colors.black87,
       error: AppColors.error,
       onError: Colors.white,
-      background: AppColors.dayBackground,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,

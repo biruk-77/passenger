@@ -7,7 +7,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../theme/color.dart';
 import '../my_transactions_screen.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/payments/payment_option.dart';

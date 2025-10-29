@@ -3,14 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../l10n/app_localizations.dart';
 
 // Import your custom theme files
 import '../../theme/color.dart';
-import '../../theme/styles.dart';
 
 import '../../viewmodels/my_transactions_viewmodel.dart';
 import '../../services/api_service.dart';

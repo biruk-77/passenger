@@ -1,7 +1,6 @@
 // lib/models/passenger.dart
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 
 class Passenger {
   final String id;

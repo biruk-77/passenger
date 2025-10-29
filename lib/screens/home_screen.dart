@@ -15,16 +15,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/contract/contract_ride.dart'; // ✅ ADD THIS IMPORT
 import 'passenger/create_subscription_screen.dart'; // ✅ ADD THIS IMPORT
 import '../l10n/app_localizations.dart';
-import '../models/active_booking_state.dart';
 import '../models/booking.dart';
 import '../models/location.dart';
 import '../models/nearby_driver.dart';
 // Add this import to home_screen.dart
-import '../models/contract/driver.dart' as driver_model;
 import '../models/passenger.dart';
 import '../models/pricing_rule.dart';
 import '../models/route.dart';
@@ -51,7 +48,6 @@ import '../utils/nearby_driver_simulator_manager.dart';
 import '../widgets/advanced_driver_info_window.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/radius_slider.dart';
-import '../utils/nearby_driver_simulator_manager.dart';
 // Screen Imports
 import 'edit_profile_screen.dart';
 import 'history_screen/history.dart';
@@ -72,7 +68,6 @@ import '../widgets/home_screen_panels/contract_driver_on_the_way_panel.dart';
 import '../widgets/home_screen_panels/contract_location_picker_panel.dart';
 
 import '../widgets/location_preview_panel.dart';
-import 'passenger/my_subscriptions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final SearchResult? initialRoute;
@@ -4189,8 +4184,10 @@ class _RideBookingPanelContent extends StatelessWidget {
     this.selectedSubscription,
     required this.onCreateNewSubscription, // ✅ ADD
     required this.onSelectNewContractType,
+    this.activeContractBooking,
     required this.contractPickStage,
     this.etaToDestination,
+    this.bookingDetails,
     required this.isContractTripOngoing,
     required this.onConfirmDropoff,
   });

@@ -283,7 +283,7 @@ class _ContractRideConfirmationPanelState
               radius: 1.5,
               colors: [
                 theme.colorScheme.secondary.withValues(alpha: 0.5),
-                theme.colorScheme.background,
+                theme.colorScheme.surface,
               ],
               stops: const [0.0, 1.0],
             ),

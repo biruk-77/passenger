@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:turf/turf.dart';
 import '../models/driver_types.dart';
 
 typedef OnDriverLocationUpdate =
@@ -26,7 +25,6 @@ class DriverSimulator {
 
   Timer? _timer;
   int _elapsedMilliseconds = 0;
-  final Feature<LineString> _routeLineFeature;
   final double _totalDistanceKm;
   late int _simulationDurationSeconds;
 
@@ -46,26 +44,31 @@ class DriverSimulator {
     required this.driverBehavior,
     required this.onUpdate,
     required this.onDone,
-  }) : _routeLineFeature = Feature<LineString>(
-         geometry: LineString(
-           coordinates: routePoints
-               .map((p) => Position(p.longitude, p.latitude))
-               .toList(),
-         ),
-       ),
-       _totalDistanceKm = length(
-         Feature<LineString>(
-           geometry: LineString(
-             coordinates: routePoints
-                 .map((p) => Position(p.longitude, p.latitude))
-                 .toList(),
-           ),
-         ),
-         Unit.kilometers,
-       ).toDouble(),
+  }) : _totalDistanceKm = _calculateTotalDistance(routePoints),
        _currentSpeedKmh = baseSpeedKmh {
     _calculateRealisticDuration();
     _scheduleRealisticEvents();
+  }
+
+  static double _calculateTotalDistance(List<LatLng> points) {
+    if (points.length < 2) return 0.0;
+    double totalDistance = 0.0;
+    for (int i = 1; i < points.length; i++) {
+      totalDistance += _haversineDistance(points[i - 1], points[i]);
+    }
+    return totalDistance;
+  }
+
+  static double _haversineDistance(LatLng p1, LatLng p2) {
+    const R = 6371.0; // Earth's radius in kilometers
+    final lat1 = p1.latitude * pi / 180;
+    final lat2 = p2.latitude * pi / 180;
+    final dLat = (p2.latitude - p1.latitude) * pi / 180;
+    final dLng = (p2.longitude - p1.longitude) * pi / 180;
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1) * cos(lat2) * sin(dLng / 2) * sin(dLng / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return R * c;
   }
 
   void _calculateRealisticDuration() {
@@ -325,17 +328,40 @@ class DriverSimulator {
 
   LatLng _getPositionAtProgress(double progress) {
     final clampedProgress = progress.clamp(0.0, 1.0);
-    final distanceToTravel = _totalDistanceKm * clampedProgress;
-    final newPointFeature = along(
-      _routeLineFeature,
-      distanceToTravel,
-      Unit.kilometers,
-    );
-    final newPoint = newPointFeature.geometry!;
-    return LatLng(
-      newPoint.coordinates.lat.toDouble(),
-      newPoint.coordinates.lng.toDouble(),
-    );
+    final targetDistance = _totalDistanceKm * clampedProgress;
+    
+    if (routePoints.isEmpty) return const LatLng(0, 0);
+    if (routePoints.length == 1) return routePoints.first;
+    if (clampedProgress <= 0.0) return routePoints.first;
+    if (clampedProgress >= 1.0) return routePoints.last;
+    
+    double accumulatedDistance = 0.0;
+    
+    for (int i = 1; i < routePoints.length; i++) {
+      final segmentDistance = _haversineDistance(routePoints[i - 1], routePoints[i]);
+      
+      if (accumulatedDistance + segmentDistance >= targetDistance) {
+        // The target point is within this segment
+        final remainingDistance = targetDistance - accumulatedDistance;
+        final segmentProgress = remainingDistance / segmentDistance;
+        
+        return _interpolateLatLng(
+          routePoints[i - 1],
+          routePoints[i],
+          segmentProgress,
+        );
+      }
+      
+      accumulatedDistance += segmentDistance;
+    }
+    
+    return routePoints.last;
+  }
+
+  LatLng _interpolateLatLng(LatLng start, LatLng end, double progress) {
+    final lat = start.latitude + (end.latitude - start.latitude) * progress;
+    final lng = start.longitude + (end.longitude - start.longitude) * progress;
+    return LatLng(lat, lng);
   }
 
   double _getBearing() {
@@ -379,9 +405,9 @@ class DriverSimulator {
   }
 
   void _completeJourney() {
-    final endPoint = _routeLineFeature.geometry!.coordinates.last;
+    final endPoint = routePoints.isNotEmpty ? routePoints.last : const LatLng(0, 0);
     onUpdate(
-      LatLng(endPoint.lat.toDouble(), endPoint.lng.toDouble()),
+      endPoint,
       0.0,
       0.0,
       DriverState.stopped,

@@ -177,7 +177,7 @@ class _HistoryListViewState extends State<_HistoryListView> {
                   (widget.tabData.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == widget.tabData.historyItems.length) {
-                  return const _LoadingIndicator();
+                  return const _LoadingIndicator(size: 24.0);
                 }
                 final item = widget.tabData.historyItems[index];
                 return _HistoryCard(item: item);
@@ -379,8 +379,8 @@ class _RideMapPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Get data needed for the preview
-    final pickupCoords = item.pickup!.coordinates!;
-    final dropoffCoords = item.dropoff!.coordinates!;
+    final pickupCoords = item.pickup!.coordinates;
+    final dropoffCoords = item.dropoff!.coordinates;
     final mapsService = Provider.of<GoogleMapsService>(context, listen: false);
 
     // Use the VehicleType model to get the correct image path
@@ -724,7 +724,7 @@ class _StatusChip extends StatelessWidget {
 
 class _LoadingIndicator extends StatelessWidget {
   final double size;
-  const _LoadingIndicator();
+  const _LoadingIndicator({required this.size});
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(
