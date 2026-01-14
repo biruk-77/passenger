@@ -1,5 +1,4 @@
 name: 🚀 Flutter CI
-
 on:
   push:
     branches: [ "main" ]
