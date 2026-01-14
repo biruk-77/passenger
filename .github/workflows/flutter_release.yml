@@ -1,15 +1,63 @@
-- name: 📥 Checkout
-  uses: actions/checkout@v4
+name: 🚀 Flutter CI & Release
 
-- name: 🐦 Set up Flutter
-  uses: subosito/flutter-action@v2
-  with:
-    flutter-version: "3.19.6"   # MUST be 3.19+ for Dart 3.9+
-    channel: stable
-    cache: true
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
-- name: ✅ Verify Flutter & Dart
-  run: flutter --version
+jobs:
+  build:
+    name: Flutter Build & Test
+    runs-on: ubuntu-latest
 
-- name: 📦 Install dependencies
-  run: flutter pub get
+    steps:
+      # 1️⃣ Checkout your repository
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Set up Flutter SDK 3.19.x (includes Dart 3.9)
+      - name: 🐦 Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.19.6"
+          channel: stable
+          cache: true
+
+      # 3️⃣ Verify Flutter & Dart versions
+      - name: ✅ Verify Flutter & Dart
+        run: flutter --version
+
+      # 4️⃣ Install dependencies
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      # 5️⃣ Analyze code
+      - name: 🔍 Analyze
+        run: flutter analyze
+
+      # 6️⃣ Run tests
+      - name: 🧪 Run tests
+        run: flutter test
+
+      # 7️⃣ Build Android APK
+      - name: 📱 Build Android APK
+        run: flutter build apk --release
+
+      # 8️⃣ Build Android App Bundle (AAB) for Play Store
+      - name: 🏗 Build Android AAB
+        run: flutter build appbundle --release
+
+      # 9️⃣ Build Web release
+      - name: 🌐 Build Web
+        run: flutter build web --release
+
+      # 10️⃣ Upload artifacts for release
+      - name: 📂 Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-build
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+            build/web
