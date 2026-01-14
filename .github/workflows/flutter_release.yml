@@ -1,5 +1,6 @@
 name: 🚀 Flutter CI & Release
 
+
 on:
   push:
     branches: ["main"]
