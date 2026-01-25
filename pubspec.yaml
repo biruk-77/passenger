@@ -144,7 +144,7 @@ flutter:
 
 dependency_overrides:
   flutter_secure_storage: 8.1.0
-  xml: ^6.6.1
+
   
 
 flutter_launcher_icons:
