@@ -76,7 +76,7 @@ dependencies:
   flutter_riverpod: ^3.0.1
   image_picker: ^1.2.0
 
-  dotted_border: ^3.0.1
+  dotted_border: ^2.1.0
 
   jwt_decoder: ^2.0.1
   mobile_number: ^3.0.0
