@@ -79,7 +79,8 @@ dependencies:
   dotted_border: ^3.1.0
   jwt_decoder: ^2.0.1
   mobile_number: ^3.0.0
-  video_player: ^2.10.0
+  video_player: ^2.8.7
+
   sms_autofill: ^2.4.1
   jwt_decode: ^0.3.1
 
