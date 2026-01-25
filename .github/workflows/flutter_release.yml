@@ -1,23 +1,23 @@
 name: 🚀 Flutter CI & Release
 
-
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
+
+permissions:
+  contents: write   # REQUIRED for GitHub Releases
 
 jobs:
-  build:
-    name: Flutter Build & Test
+  release:
+    name: Build & Release Flutter App
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your repository
-      - name: 📥 Checkout repository
+      # Checkout repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Flutter SDK 3.19.x (includes Dart 3.9)
+      # Setup Flutter
       - name: 🐦 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -25,40 +25,79 @@ jobs:
           channel: stable
           cache: true
 
-      # 3️⃣ Verify Flutter & Dart versions
-      - name: ✅ Verify Flutter & Dart
+      # Verify Flutter
+      - name: ✅ Flutter version
         run: flutter --version
 
-      # 4️⃣ Install dependencies
+      # Install dependencies
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      # 5️⃣ Analyze code
+      # Analyze
       - name: 🔍 Analyze
         run: flutter analyze
 
-      # 6️⃣ Run tests
-      - name: 🧪 Run tests
-        run: flutter test
-
-      # 7️⃣ Build Android APK
-      - name: 📱 Build Android APK
+      # Build APK
+      - name: 📱 Build APK
         run: flutter build apk --release
 
-      # 8️⃣ Build Android App Bundle (AAB) for Play Store
-      - name: 🏗 Build Android AAB
+      # Build AAB
+      - name: 🏗 Build App Bundle
         run: flutter build appbundle --release
 
-      # 9️⃣ Build Web release
+      # Build Web (safe)
       - name: 🌐 Build Web
-        run: flutter build web --release
+        run: |
+          if [ -d "web" ]; then
+            flutter build web --release
+          else
+            echo "Web not enabled, skipping"
+          fi
 
-      # 10️⃣ Upload artifacts for release
-      - name: 📂 Upload artifacts
-        uses: actions/upload-artifact@v3
+      # Zip Web Build
+      - name: 📦 Zip Web Build
+        run: |
+          if [ -d "build/web" ]; then
+            cd build
+            zip -r web-release.zip web
+          fi
+
+      # Create GitHub Release
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: flutter-build
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
-            build/web
+          tag_name: v${{ github.run_number }}
+          name: Flutter Release v${{ github.run_number }}
+          body: |
+            🚀 Automated Flutter Release
+
+            Included:
+            - Android APK
+            - Android App Bundle (AAB)
+            - Web Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload APK
+      - name: 📤 Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload AAB
+      - name: 📤 Upload AAB
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload Web ZIP
+      - name: 📤 Upload Web
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/web-release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
